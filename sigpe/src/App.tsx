@@ -7,7 +7,7 @@ function App() {
         <Routes>
             <Route path="/" element={<LoginPage />} />
         </Routes>
-    )
+    );
 }
 
 export default App;
