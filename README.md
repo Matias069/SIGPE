@@ -46,7 +46,7 @@ git clone https://github.com/Matias069/SIGPE.git
 
 ## Instalação
 **Instale as dependências do *front* e do *back*** com os seguintes comandos nas pastas informadas:
-* Dentro da pasta `front/sigpe` no *CMD*:
+* Dentro da pasta `front` no *CMD*:
     ```
     npm install
     ```
@@ -68,7 +68,7 @@ git clone https://github.com/Matias069/SIGPE.git
 
 ## Rodando o Projeto
 Abra **duas** instâncias do *CMD*, uma para o *frontend* e a outra para o *backend*, e digite os comandos a seguir **(as instâncias deverão permanecer abertas)**
-1. Navegue até a pasta `SIGPE/front/sigpe` e digite:
+1. Navegue até a pasta `SIGPE/front` e digite:
     ```
     npm run dev
     ```
