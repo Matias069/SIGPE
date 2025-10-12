@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Orientador extends Authenticatable
 {
@@ -16,6 +17,7 @@ class Orientador extends Authenticatable
         'nomeOrientador',
         'emailOrientador',
         'senhaOrientador',
+        'isAdmin',
     ];
     protected $hidden = [
         'senhaOrientador',
@@ -29,6 +31,13 @@ class Orientador extends Authenticatable
     {
         return [
             'senhaOrientador' => 'hashed',
+            'isAdmin' => 'boolean',
         ];
+    }
+
+    // Orientador tem muitos Projetos
+    public function projetos(): HasMany
+    {
+        return $this->hasMany(Projeto::class, 'idOrientador', 'idOrientador');
     }
 }

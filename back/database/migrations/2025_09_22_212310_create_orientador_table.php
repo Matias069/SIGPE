@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nomeOrientador', 100);
             $table->string('emailOrientador', 50)->unique();
             $table->string('senhaOrientador');
+            $table->boolean('isAdmin')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

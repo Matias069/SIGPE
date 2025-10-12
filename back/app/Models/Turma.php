@@ -14,6 +14,7 @@ class Turma extends Model
     protected $primaryKey = 'idTurma';
     public $timestamps = false;
     protected $fillable = [
+        'numeroTurma',
         'curso',
     ];
 
