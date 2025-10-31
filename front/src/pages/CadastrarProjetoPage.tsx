@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+// @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import "../styles/Pages.css";
 
 export default function CadastrarProjetoPage() {
@@ -8,6 +9,8 @@ export default function CadastrarProjetoPage() {
     integrantes: "",
     resumo: "",
   });
+
+  const nomeInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -31,6 +34,7 @@ export default function CadastrarProjetoPage() {
         integrantes: "",
         resumo: "",
       });
+      nomeInputRef.current?.focus();
     } catch (error) {
       console.error("Erro ao salvar projeto:", error);
       alert("Ocorreu um erro ao cadastrar o projeto.");
@@ -48,7 +52,9 @@ export default function CadastrarProjetoPage() {
           name="nomeProjeto"
           value={formData.nomeProjeto}
           onChange={handleChange}
+          autoFocus
           required
+          ref={nomeInputRef}
         />
 
         <label>Orientador:</label>

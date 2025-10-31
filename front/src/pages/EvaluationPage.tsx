@@ -10,9 +10,8 @@ export default function EvaluationPage() {
 
   return (
     <div className="p-6">
-      <p className="mb-2">Nome do projeto: __________</p>
-      <p>Professor avaliador 1: __________</p>
-      <p className="mb-4">Professor avaliador 2: __________</p>
+      <p className="mb-2">Nome do Projeto: __________</p>
+      <p className="mb-4">Professor Orientador: __________</p>
 
       {criterios.map((criterio) => (
         <div key={criterio} className="mb-4">
