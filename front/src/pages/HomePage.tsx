@@ -1,3 +1,4 @@
+// @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import "../styles/Pages.css";
 import expocanp from "../assets/Img_Expocanpi.jpg";
 

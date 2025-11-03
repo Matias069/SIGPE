@@ -4,7 +4,7 @@ export default function AccessPage() {
     <div className="centered-box">
       <h2>Insira a palavra chave</h2>
       <input type="text" className="input" />
-      <button className="btn">ACESSAR</button>
+      <button className="btn">Acessar</button>
     </div>
   );
 }

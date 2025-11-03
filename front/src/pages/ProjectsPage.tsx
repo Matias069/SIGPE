@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+// @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import "../styles/Pages.css";
 
 interface Projeto {
@@ -90,7 +91,7 @@ export default function ProjetosPage() {
       {projetoSelecionado && (
         <div className="modal-overlay" onClick={() => setProjetoSelecionado(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setProjetoSelecionado(null)}>×</button>
+            <button className="modal-close" onClick={() => setProjetoSelecionado(null)}>&times;</button>
             <h2>{projetoSelecionado.nomeProjeto ?? "Sem nome"}</h2>
             <p><strong>Orientador:</strong> {projetoSelecionado.orientador ?? "Não informado"}</p>
             <p><strong>Integrantes:</strong> {projetoSelecionado.integrantes ?? "Não informado"}</p>

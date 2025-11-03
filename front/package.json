@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-icons/all-files": "^4.1.0",
     "@tailwindcss/vite": "^4.1.11",
+    "axios": "^1.13.1",
     "bootstrap": "^5.3.8",
     "daisyui": "^5.0.50",
     "react": "^19.1.0",
