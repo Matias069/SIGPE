@@ -1,93 +1,94 @@
-import { useState, useRef } from "react";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import apiClient from '../apiClient';
+import { useAuth } from '../contexts/AuthContext';
 // @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import "../styles/Pages.css";
 
 export default function CadastrarProjetoPage() {
-  const [formData, setFormData] = useState({
-    nomeProjeto: "",
-    orientador: "",
-    integrantes: "",
-    resumo: "",
-  });
+  // Hooks
+  const navigate = useNavigate();
+  const { user } = useAuth(); // Obter o utilizador logado
 
-  const nomeInputRef = useRef<HTMLInputElement>(null);
+  // Estados do formulário
+  const [nomeProjeto, setNomeProjeto] = useState('');
+  const [descricaoProjeto, setDescricaoProjeto] = useState('');
+  // TODO: Adicionar estado para Alunos e Banner
+  const [erro, setErro] = useState('');
+  const [sucesso, setSucesso] = useState('');
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleSubmit = async (event: React.FormEvent) => {
+      event.preventDefault();
+      setErro('');
+      setSucesso('');
+
+      try {
+          await apiClient.post('/api/projetos', {
+              nomeProjeto,
+              descricaoProjeto,
+          });
+
+          setSucesso('Projeto cadastrado com sucesso!');
+          // Limpa o formulário
+          setNomeProjeto('');
+          setDescricaoProjeto('');
+
+      } catch (error: any) {
+          console.error("Erro ao cadastrar projeto", error);
+          if (error.response && error.response.status === 422) {
+              setErro('Erro de validação: ' + JSON.stringify(error.response.data.errors));
+          } else {
+              setErro('Ocorreu um erro ao cadastrar o projeto.');
+          }
+      }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const projetosSalvos = JSON.parse(localStorage.getItem("projetos") || "[]");
-      const novosProjetos = [...projetosSalvos, formData];
-      localStorage.setItem("projetos", JSON.stringify(novosProjetos));
-
-      alert("Projeto cadastrado com sucesso!");
-
-      setFormData({
-        nomeProjeto: "",
-        orientador: "",
-        integrantes: "",
-        resumo: "",
-      });
-      nomeInputRef.current?.focus();
-    } catch (error) {
-      console.error("Erro ao salvar projeto:", error);
-      alert("Ocorreu um erro ao cadastrar o projeto.");
-    }
-  };
+  // Proteção de Rota
+  if (!user) {
+      return (
+          <div className="page-container">
+              <h2>Acesso Negado</h2>
+              <p>Você precisa estar logado como Orientador para cadastrar um projeto.</p>
+              <button onClick={() => navigate('/login')}>Ir para Login</button>
+          </div>
+      );
+  }
 
   return (
-    <div className="page">
-      <h1 className="page-title">Cadastrar Projeto</h1>
+      <div className="page-container">
+          <div className="register-project-container">
+              <form className="register-project-form" onSubmit={handleSubmit}>
+                  <h2>Cadastrar Projeto</h2>
 
-      <form className="form" onSubmit={handleSubmit}>
-        <label>Nome do Projeto:</label>
-        <input
-          type="text"
-          name="nomeProjeto"
-          value={formData.nomeProjeto}
-          onChange={handleChange}
-          autoFocus
-          required
-          ref={nomeInputRef}
-        />
+                  <div className="input-group">
+                      <label htmlFor="nomeProjeto">Nome do Projeto</label>
+                      <input
+                          type="text"
+                          id="nomeProjeto"
+                          value={nomeProjeto}
+                          onChange={(e) => setNomeProjeto(e.target.value)}
+                          required
+                      />
+                  </div>
 
-        <label>Orientador:</label>
-        <input
-          type="text"
-          name="orientador"
-          value={formData.orientador}
-          onChange={handleChange}
-          required
-        />
+                  <div className="input-group">
+                      <label htmlFor="descricaoProjeto">Descrição</label>
+                      <textarea
+                          id="descricaoProjeto"
+                          value={descricaoProjeto}
+                          onChange={(e) => setDescricaoProjeto(e.target.value)}
+                          required
+                      />
+                  </div>
 
-        <label>Integrantes:</label>
-        <input
-          type="text"
-          name="integrantes"
-          value={formData.integrantes}
-          onChange={handleChange}
-          required
-        />
+                  {/* TODO: Adicionar inputs para Alunos e Banner */}
+                  
+                  {erro && <p className="error-message">{erro}</p>}
+                  {sucesso && <p className="success-message">{sucesso}</p>}
 
-        <label>Resumo:</label>
-        <textarea
-          name="resumo"
-          rows={4}
-          value={formData.resumo}
-          onChange={handleChange}
-          required
-        />
-
-        <button type="submit" className="btn-enviar">
-          Cadastrar
-        </button>
-      </form>
-    </div>
+                  <button type="submit" className="register-button">Cadastrar</button>
+              </form>
+          </div>
+      </div>
   );
 }

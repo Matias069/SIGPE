@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Projeto;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProjetoController extends Controller
 {
@@ -11,7 +13,7 @@ class ProjetoController extends Controller
      */
     public function index()
     {
-        //
+        return Projeto::all();
     }
 
     /**
@@ -19,7 +21,22 @@ class ProjetoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'nomeProjeto' => 'required|string|max:100',
+            'descricaoProjeto' => 'required|string|max:500',
+            // TODO: bannerProjeto
+        ]);
+
+        $orientadorId = $request->user()->idOrientador;
+
+        $projeto = Projeto::create([
+            'nomeProjeto' => $validatedData['nomeProjeto'],
+            'descricaoProjeto' => $validatedData['descricaoProjeto'],
+            'idOrientador' => $orientadorId,
+            'bannerProjeto' => null //TODO
+        ]);
+
+        return response()->json($projeto, 201);
     }
 
     /**

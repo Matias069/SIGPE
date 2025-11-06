@@ -28,7 +28,7 @@ export default function LoginPage() {
           login(response.data);
 
           // Redirecionar
-          navigate('/cadastrar-projeto');
+          navigate('/cadastrar');
 
       } catch (error: any) {
           console.error('Falha no login', error);
