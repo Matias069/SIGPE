@@ -14,7 +14,12 @@ return new class extends Migration
         Schema::create('turma', function (Blueprint $table) {
             $table->increments('idTurma');
             $table->integer('numeroTurma')->unsigned()->unique();
-            $table->string('curso', 50);
+            $table->enum('curso', [
+                'Agropecuária',
+                'Meio Ambiente',
+                'Informática',
+                'Agroindústria'
+            ]);
         });
     }
 

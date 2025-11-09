@@ -16,6 +16,10 @@ class DatabaseSeeder extends Seeder
         
         $this->call([
             OrientadorSeeder::class,
+            AvaliadorSeeder::class,
+            TurmaSeeder::class,
+            ProjetoSeeder::class,
+            AlunoSeeder::class,
         ]);
     }
 }

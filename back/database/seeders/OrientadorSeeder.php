@@ -25,7 +25,7 @@ class OrientadorSeeder extends Seeder
             $nome = 'o'.($i+1);
 
             Orientador::create([
-                'nomeOrientador' => $nome,
+                'nomeOrientador' => "Orientador Número ".($i+1),
                 'emailOrientador' => "{$nome}@{$nome}.{$nome}",
                 'senhaOrientador' => Hash::make('senha123'),
                 'isAdmin' => false,

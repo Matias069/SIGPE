@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedInteger('idOrientador');
             $table->string('nomeProjeto', 100);
             $table->string('descricaoProjeto', 500);
-            $table->binary('bannerProjeto')->nullable();
+            $table->string('bannerProjeto')->nullable();
 
             $table->foreign('idOrientador')->references('idOrientador')->on('orientador');
         });

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('aluno', function (Blueprint $table) {
             $table->char('matriculaAluno', 11)->primary();
             $table->string('nomeAluno', 100);
-            $table->unsignedInteger('idProjeto');
+            $table->unsignedInteger('idProjeto')->nullable();
             $table->unsignedInteger('idTurma');
 
             $table->foreign('idProjeto')->references('idProjeto')->on('projeto');

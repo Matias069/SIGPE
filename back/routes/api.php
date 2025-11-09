@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\Orientador;
 use App\Http\Controllers\ProjetoController;
+use App\Http\Controllers\AlunoController;
 
 // Login
 Route::post('/login', function (Request $request) {
@@ -48,4 +49,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Cadastrar um novo projeto
     Route::post('/projetos', [ProjetoController::class, 'store']);
+
+    // Retorna todos os alunos
+    Route::get('/alunos', [AlunoController::class, 'index']);
+    
+    // Retorna alunos disponíveis para o dropdown de cadastro
+    Route::get('/alunos/disponiveis', [AlunoController::class, 'searchAvailable']);
 });
