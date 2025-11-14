@@ -63,6 +63,8 @@ git clone https://github.com/Matias069/SIGPE.git
     php artisan key:generate
     php artisan migrate
     ```
+> [!NOTE]
+> Caso queira adicionar dados de teste em todas as tabelas do projeto, digite `php artisan db:seed` dentro da pasta `back` do projeto.
 
 ## Rodando o Projeto
 Abra **duas** instâncias do *CMD*, uma para o *frontend* e a outra para o *backend*, e digite os comandos a seguir **(as instâncias deverão permanecer abertas)**
