@@ -57,9 +57,7 @@ git clone https://github.com/Matias069/SIGPE.git
 
 ## Banco de Dados
 1. Configure o PostgreSQL abrindo a aplicação **pgAdmin**
-2. Localize o arquivo `.env.example` dentro de `SIGPE/back`, duplique-o e renomeie-o para **`.env`**
-    * Dentro dele, modifique `DB_CONNECTION=` para **`DB_CONNECTION=pgsql`**
-    * Modifique os atributos `DB_HOST=`, `DB_PORT=`, `DB_DATABASE=`,`DB_USERNAME=` e `DB_PASSWORD=` **de acordo com a configuração do PostgreSQL**, removendo os comentários (**`# `**) na frente de suas linhas
+2. Localize o arquivo `.env.example` dentro de `SIGPE/back`. Duplique-o, renomeie-o para **`.env`** e mude os valores das variáveis de acordo com as instruções presente no próprio `.env.example`.
 3. Dentro da pasta `back`, digite no ***CMD*** os comandos:
     ```
     php artisan key:generate
@@ -68,13 +66,13 @@ git clone https://github.com/Matias069/SIGPE.git
 
 ## Rodando o Projeto
 Abra **duas** instâncias do *CMD*, uma para o *frontend* e a outra para o *backend*, e digite os comandos a seguir **(as instâncias deverão permanecer abertas)**
-1. Navegue até a pasta `SIGPE/front` e digite:
-    ```
-    npm run dev
-    ```
-2. Navegue até a pasta `SIGPE/back` e digite:
+1. Navegue até a pasta `SIGPE/back` e digite:
     ```
     php artisan serve
+    ```
+2. Navegue até a pasta `SIGPE/front` e digite:
+    ```
+    npm run dev
     ```
 
 > [!NOTE]
