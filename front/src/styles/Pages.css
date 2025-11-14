@@ -183,3 +183,441 @@
 .text-center {
   text-align: center;
 }
+
+
+
+/* -------------------------------- teste ------------------------------------ */
+
+/* Container geral da página */
+.page-container-login {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f3f4f6;
+  padding: 20px;
+}
+
+/* Caixa do login */
+.login-container {
+  background: white;
+  padding: 30px 35px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 380px;
+}
+
+/* Título */
+.login-form h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 26px;
+  color: #333;
+}
+
+/* Grupo dos inputs */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #444;
+}
+
+/* Inputs */
+.input-group input {
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+/* Botão de login */
+.login-button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.login-button:hover {
+  background: #2563eb;
+}
+
+/* Esqueceu senha */
+.forgot-password {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+  color: #555;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.forgot-password:hover {
+  color: #2563eb;
+}
+
+/* Mensagem de erro */
+.error-message {
+  color: #d9534f;
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* Container da página de cadastro */
+.page-container-cadastro {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f3f4f6;
+  padding: 20px;
+}
+
+/* Caixa principal */
+.cadastro-box {
+  background: white;
+  padding: 28px 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Título */
+.cadastro-title {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 22px;
+  color: #333;
+  font-weight: bold;
+}
+
+/* Grupo de campos */
+.cadastro-field {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cadastro-field label {
+  margin-bottom: 5px;
+  color: #444;
+  font-weight: 600;
+}
+
+/* Inputs e selects */
+.cadastro-input,
+.cadastro-select {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: border-color 0.2s;
+}
+
+.cadastro-input:focus,
+.cadastro-select:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+/* Botão */
+.cadastro-button {
+  width: 100%;
+  padding: 12px;
+  background: #3b82f6;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+
+.cadastro-button:hover {
+  background: #2563eb;
+}
+
+/* Mensagem de sucesso */
+.cadastro-success {
+  color: #2e7d32;
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+/* Mensagem de erro */
+.cadastro-error {
+  color: #d9534f;
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+/* Container geral */
+.page-container-orientador {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f3f4f6;
+  padding: 20px;
+}
+
+/* Caixa do formulário */
+.orientador-box {
+  background: white;
+  padding: 28px 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Título */
+.orientador-title {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 22px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Campos */
+.orientador-field {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.orientador-field label {
+  margin-bottom: 5px;
+  color: #444;
+  font-weight: 600;
+}
+
+.orientador-input {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: border-color 0.2s;
+}
+
+.orientador-input:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+/* Checkbox admin */
+.orientador-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.orientador-checkbox label {
+  color: #444;
+  font-weight: 600;
+}
+
+/* Botão */
+.orientador-button {
+  width: 100%;
+  padding: 12px;
+  background: #3b82f6;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.orientador-button:hover {
+  background: #2563eb;
+}
+
+/* ================================
+   Página - Cadastrar Avaliador
+   Classes exclusivas (prefixo: av-)
+   ================================ */
+
+/* Container geral */
+.av-container {
+  width: 100%;
+  min-height: 100vh;
+  background: #f3f4f6;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  box-sizing: border-box;
+}
+
+/* Caixa do formulário */
+.av-box {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  padding: 26px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Título */
+.av-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #222;
+  margin-bottom: 18px;
+}
+
+/* Label */
+.av-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+/* Inputs */
+.av-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  font-size: 15px;
+  margin-bottom: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.av-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  outline: none;
+}
+
+/* Botão */
+.av-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #2563eb;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-top: 8px;
+}
+
+.av-button:hover {
+  background-color: #1e4ed8;
+}
+
+/* ================================
+   Página - Cadastrar Turma
+   Classes exclusivas (prefixo: turma-)
+   ================================ */
+
+/* Container geral */
+.turma-container {
+  width: 100%;
+  min-height: 100vh;
+  background: #f3f4f6;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  box-sizing: border-box;
+}
+
+/* Caixa do formulário */
+.turma-box {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  padding: 26px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Título */
+.turma-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #222;
+  margin-bottom: 18px;
+}
+
+/* Label */
+.turma-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+/* Input e Select */
+.turma-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  font-size: 15px;
+  margin-bottom: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.turma-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  outline: none;
+}
+
+/* Botão */
+.turma-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #2563eb;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-top: 8px;
+}
+
+.turma-button:hover {
+  background-color: #1e4ed8;
+}

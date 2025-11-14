@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('examinar', function (Blueprint $table) {
             $table->string('matriculaSiape', 8);
             $table->char('matriculaAluno', 11);
-            $table->tinyInteger('nota')->unsigned();
+            $table->tinyInteger('notaAluno')->unsigned();
             $table->primary(['matriculaSiape', 'matriculaAluno']);
 
             $table->foreign('matriculaSiape')->references('matriculaSiape')->on('avaliador');
