@@ -42,7 +42,17 @@ class AlunoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validar
+        $validatedData = $request->validate([
+            'idTurma' => 'required|integer|exists:turma,idTurma',
+            'nomeAluno' => 'required|string|max:100',
+            'matriculaAluno' => 'required|string|size:11|unique:aluno,matriculaAluno',
+        ]);
+
+        // Criar
+        $aluno = Aluno::create($validatedData);
+
+        return response()->json($aluno, 201);
     }
 
     /**

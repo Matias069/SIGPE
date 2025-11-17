@@ -25,14 +25,6 @@ class ProjetoController extends Controller
      */
     public function store(Request $request)
     {
-        $orientador = $request->user();
-        if ($orientador->isAdmin) {
-            return response()->json([
-                // Requisição não autorizada
-                'message' => 'Não autorizado para esta ação.'
-            ], 401); 
-        }
-
         $validatedData = $request->validate([
             'nomeProjeto' => 'required|string|max:100',
             'descricaoProjeto' => 'required|string|max:500',

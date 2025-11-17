@@ -8,6 +8,12 @@ use Illuminate\Validation\ValidationException;
 use App\Models\Orientador;
 use App\Http\Controllers\ProjetoController;
 use App\Http\Controllers\AlunoController;
+use App\Http\Controllers\TurmaController;
+use App\Http\Controllers\OrientadorController;
+use App\Http\Controllers\AvaliadorController;
+
+// Listar todos os projetos
+Route::get('/projetos', [ProjetoController::class, 'index']);
 
 // Login
 Route::post('/login', function (Request $request) {
@@ -28,9 +34,6 @@ Route::post('/login', function (Request $request) {
     return response()->json($orientador);
 });
 
-// Listar todos os projetos
-Route::get('/projetos', [ProjetoController::class, 'index']);
-
 // Rotas Privadas
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -49,10 +52,24 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Cadastrar um novo projeto
     Route::post('/projetos', [ProjetoController::class, 'store']);
-
-    // Retorna todos os alunos
-    Route::get('/alunos', [AlunoController::class, 'index']);
     
     // Retorna alunos disponíveis para o dropdown de cadastro
     Route::get('/alunos/disponiveis', [AlunoController::class, 'searchAvailable']);
+
+    // Requer Admin
+    Route::middleware('admin')->group(function () {
+        // Rotas de Turma
+        Route::get('/turmas', [TurmaController::class, 'index']);
+        Route::post('/turmas', [TurmaController::class, 'store']);
+
+        // Rotas de Aluno
+        Route::get('/alunos', [AlunoController::class, 'index']);
+        Route::post('/alunos', [AlunoController::class, 'store']);
+        
+        // Rota de Orientador
+        Route::post('/orientadores', [OrientadorController::class, 'store']);
+
+        // Rota de Avaliador
+        Route::post('/avaliadores', [AvaliadorController::class, 'store']);
+    });
 });
