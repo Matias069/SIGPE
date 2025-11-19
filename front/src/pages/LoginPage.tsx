@@ -96,11 +96,6 @@ export default function LoginPage() {
           <button type="submit" className="login-button" disabled={isLoading}>
             {isLoading ? 'Entrando...' : 'Entrar'}
           </button>
-
-          <a href="/acesso" className="forgot-password">
-            Esqueceu a senha?
-          </a>
-
         </form>
       </div>
     </div>
