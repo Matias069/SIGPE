@@ -14,7 +14,7 @@ class OrientadorSeeder extends Seeder
     public function run(): void
     {
         Orientador::create([
-            'nomeOrientador' => "admin",
+            'nomeOrientador' => "Administrador Número 1",
             'emailOrientador' => "admin@admin.admin",
             'senhaOrientador' => Hash::make('senhaadmin'),
             'isAdmin' => true,

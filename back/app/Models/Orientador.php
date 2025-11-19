@@ -8,10 +8,10 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 
+
 class Orientador extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens;
-
     protected $table = 'orientador';
     protected $primaryKey = 'idOrientador';
     protected $fillable = [

@@ -24,7 +24,7 @@ class AvaliadorController extends Controller
         $validatedData = $request->validate([
             'nomeAvaliador' => 'required|string|max:100',
             'emailAvaliador' => 'required|string|email|max:50',
-            'matriculaSiape' => 'required|string|max:8|unique:avaliador,matriculaSiape',
+            'matriculaSiape' => 'required|string|min:7|max:8|unique:avaliador,matriculaSiape',
         ]);
 
         // Criar

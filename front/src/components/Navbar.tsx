@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+// @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Navbar.css'.
 import "../styles/Navbar.css";
 
 export default function Navbar() {

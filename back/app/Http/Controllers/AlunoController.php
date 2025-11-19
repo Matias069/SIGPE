@@ -23,13 +23,15 @@ class AlunoController extends Controller
         // Começa a query buscando apenas alunos sem projeto
         $query = Aluno::whereNull('idProjeto');
 
-        // Se houver um parâmetro 'search' na URL
-        if ($request->has('search')) {
-            $search = $request->query('search');
+        // Se houver um parâmetro 'search' na URL e não estiver vazio
+        if ($request->has('search') && $request->query('search') != '') {
+            // Converte o termo de busca para minúsculas
+            $searchTerm = strtolower($request->query('search'));
             
-            $query->where(function ($q) use ($search) {
-                $q->where('nomeAluno', 'like', "%{$search}%")
-                  ->orWhere('matriculaAluno', 'like', "%{$search}%");
+            $query->where(function ($q) use ($searchTerm) {
+                // Case Insensitive LIKE
+                $q->where('nomeAluno', 'ILIKE', "%{$searchTerm}%")
+                  ->orWhere('matriculaAluno', 'LIKE', "%{$searchTerm}%");
             });
         }
 

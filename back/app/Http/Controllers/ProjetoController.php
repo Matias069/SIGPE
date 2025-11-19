@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Auth;
 
 class ProjetoController extends Controller
 {
@@ -63,7 +62,7 @@ class ProjetoController extends Controller
             ]);
 
             // Associar os Alunos
-            Aluno::whereIn('idAluno', $validatedData['alunos'])
+            Aluno::whereIn('matriculaAluno', $validatedData['alunos'])
                  ->update(['idProjeto' => $projeto->idProjeto]);
 
             // Se tudo correu bem, confirma as alterações

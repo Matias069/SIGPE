@@ -1,4 +1,3 @@
-import React from 'react';
 import ImgExpocanpi from '../assets/Img_Expocanpi.jpg'; // Usaremos esta como imagem padrão
 // @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import '../styles/Pages.css';
