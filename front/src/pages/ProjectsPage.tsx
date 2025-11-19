@@ -24,8 +24,7 @@ export default function ProjetosPage() {
                 setError('');
                 setLoading(true);
                 
-                // A rota pública /api/projetos é chamada (ProjetoController@index)
-                const response = await apiClient.get('/api/projetos');
+                const response = await apiClient.get('/projetos');
                 
                 setProjetos(response.data); // Guarda os projetos no estado
             } catch (err) {

@@ -31,7 +31,7 @@ export default function CadastrarOrientadorPage() {
         setSucesso('');
 
         try {
-            await apiClient.post('/api/orientadores', formData);
+            await apiClient.post('/orientadores', formData);
             setSucesso('Orientador cadastrado com sucesso!');
             setFormData({ nomeOrientador: '', emailOrientador: '', senhaOrientador: '', isAdmin: false });
         } catch (error: any) {

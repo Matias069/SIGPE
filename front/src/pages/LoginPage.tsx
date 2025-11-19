@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -15,32 +16,43 @@ export default function LoginPage() {
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
     setErro('');
+    setIsLoading(true);
 
     try {
-      const dadosUsuario = await login(email, senha);
-
-      // Redireciona baseado no status de Admin
-      if (dadosUsuario.isAdmin) {
-        // Se for Admin, redireciona para a Home ('/')
-        navigate('/');
+      // Chama o login do contexto
+      const orientador = await login(email, senha);
+      
+      // Redirecionamento baseado na role com verificação de segurança
+      if (orientador) {
+          if (orientador.isAdmin) {
+            navigate('/'); 
+          } else {
+            navigate('/cadastrarprojeto');
+          }
       } else {
-        // Se for Orientador (não-Admin), redireciona para Cadastrar Projeto
-        navigate('/cadastrarprojeto');
+          // Se login não jogou erro mas também não retornou user
+          setErro('Erro ao obter dados do usuário.');
       }
 
     } catch (error: any) {
-      console.error('Erro no login:', error);
-      
-      if (error.response?.status === 422) {
-        // Erro de validação (campos vazios ou inválidos)
-        setErro(error.response.data.errors.emailOrientador?.[0] || 'Dados inválidos.');
-      } else if (error.response?.status === 419) {
-        // Erro de CSRF (Sessão expirada ou inválida)
-        setErro('Sessão expirada. Atualize a página e tente novamente.');
+      console.error('Erro de Login:', error);
+
+      if (!error.response) {
+         // Erro de rede (backend desligado ou CORS)
+         setErro('Erro de conexão com o servidor.');
+      } else if (error.response.status === 401) {
+         // 401 = Unauthorized (Senha ou Email errados)
+         setErro('Email ou senha incorretos.');
+      } else if (error.response.status === 422) {
+         // 422 = Erro de Validação do Laravel
+         const msg = error.response.data.errors?.emailOrientador?.[0];
+         setErro(msg || 'Dados inválidos preenchidos.');
       } else {
-        // Outros erros (401 Credenciais incorretas, 500, etc)
-        setErro('Email ou senha incorretos.');
+         // Outros erros (500, 404, etc)
+         setErro('Ocorreu um erro inesperado. Tente novamente.');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -81,7 +93,9 @@ export default function LoginPage() {
 
           {erro && <p className="error-message">{erro}</p>}
 
-          <button type="submit" className="login-button">Entrar</button>
+          <button type="submit" className="login-button" disabled={isLoading}>
+            {isLoading ? 'Entrando...' : 'Entrar'}
+          </button>
 
           <a href="/acesso" className="forgot-password">
             Esqueceu a senha?

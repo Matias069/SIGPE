@@ -28,7 +28,7 @@ export default function CadastrarTurmaPage() {
         };
 
         try {
-            await apiClient.post('/api/turmas', dataToSend);
+            await apiClient.post('/turmas', dataToSend);
             setSucesso('Turma cadastrada com sucesso!');
             setFormData({ numeroTurma: '', curso: '' }); // Reseta o formulário
         } catch (error: any) {

@@ -42,7 +42,7 @@ export default function CadastrarAlunoPage() {
         // Debounce: espera 300ms após o utilizador parar de digitar
         const timer = setTimeout(() => {
             // Chama a rota correta do backend
-            apiClient.get(`/api/turmas/search?search=${turmaSearch}`)
+            apiClient.get(`/turmas/search?search=${turmaSearch}`)
                 .then(response => {
                     setSearchResults(response.data);
                     setShowDropdown(response.data.length > 0);
@@ -81,7 +81,7 @@ export default function CadastrarAlunoPage() {
         }
 
         try {
-            await apiClient.post('/api/alunos', formData);
+            await apiClient.post('/alunos', formData);
             setSucesso('Aluno cadastrado com sucesso!');
             setFormData({ nomeAluno: '', matriculaAluno: '', idTurma: '' });
             setSelectedTurma(null);

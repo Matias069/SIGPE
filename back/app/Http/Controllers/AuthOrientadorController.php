@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\Orientador;
+use Illuminate\Http\JsonResponse;
 
 class AuthOrientadorController extends Controller
 {
@@ -32,13 +33,17 @@ class AuthOrientadorController extends Controller
             ]);
         }
 
-        // Realiza o login usando o guard 'web' (session-based)
-        Auth::guard('web')->login($orientador, $request->boolean('remember'));
+        // Deleta tokens antigos para evitar acúmulo
+        $orientador->tokens()->delete();
         
-        // Regenera a sessão para evitar Session Fixation
-        $request->session()->regenerate();
+        // Cria um novo token
+        $token = $orientador->createToken('auth_token')->plainTextToken;
 
-        return response()->json($orientador);
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'orientador' => $orientador,
+        ]);
     }
 
     /**
@@ -59,13 +64,10 @@ class AuthOrientadorController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function logout(Request $request)
+    public function logout(Request $request): JsonResponse
     {
-        Auth::guard('web')->logout(); // Efetua o logout do guard 'web'
-        
-        $request->session()->invalidate(); // Invalida a sessão
-        $request->session()->regenerateToken(); // Regenera o token CSRF
-
-        return response()->noContent();
+        // Revoga o token atual do usuário
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Logout realizado com sucesso']);
     }
 }

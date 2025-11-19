@@ -14,4 +14,5 @@ export interface AuthContextType {
     login: (emailOrientador: string, senhaOrientador: string) => Promise<Orientador>;
     logout: () => Promise<void>;
     isAdmin: boolean;
+    loading: boolean;
 }

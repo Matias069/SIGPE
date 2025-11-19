@@ -23,7 +23,7 @@ export default function CadastrarAvaliadorPage() {
         setSucesso('');
 
         try {
-            await apiClient.post('/api/avaliadores', formData);
+            await apiClient.post('/avaliadores', formData);
             setSucesso('Avaliador cadastrado com sucesso!');
             setFormData({ nomeAvaliador: '', emailAvaliador: '', matriculaSiape: '' });
         } catch (error: any) {

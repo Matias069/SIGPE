@@ -45,7 +45,7 @@ export default function CadastrarProjetoPage() {
         // Debounce: espera 300ms após o utilizador parar de digitar
         const timer = setTimeout(() => {
             // Chama a rota correta do backend
-            apiClient.get(`/api/alunos/disponiveis?search=${alunoSearch}`)
+            apiClient.get(`/alunos/disponiveis?search=${alunoSearch}`)
                 .then(response => {
                     // Filtra alunos que já foram selecionados
                     const availableAlunos = response.data.filter(
@@ -113,7 +113,7 @@ export default function CadastrarProjetoPage() {
         });
 
         try {
-            await apiClient.post('/api/projetos', formData);
+            await apiClient.post('/projetos', formData);
             setSucesso('Projeto cadastrado com sucesso!');
             
             // Limpa o formulário
