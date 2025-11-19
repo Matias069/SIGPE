@@ -248,17 +248,17 @@
   width: 100%;
   padding: 12px;
   margin-top: 10px;
-  background: #3b82f6;
+  background-color: #28a745;
   color: white;
   border: none;
   border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.3s ease;
 }
 
 .login-button:hover {
-  background: #2563eb;
+  background-color: #218838;
 }
 
 /* Esqueceu senha */
@@ -620,4 +620,73 @@
 
 .turma-button:hover {
   background-color: #1e4ed8;
+}
+
+.register-button {
+  background-color: #28a745;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.register-button:hover {
+  background-color: #218838;
+}
+
+.search-dropdown-container {
+  position: relative;
+  width: 100%;
+}
+
+.search-dropdown-list {
+  position: absolute;
+  top: 100%; /* Posiciona logo abaixo do input */
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  list-style-type: none;
+  margin: 4px 0 0 0;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.search-dropdown-list li {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.search-dropdown-list li:last-child {
+  border-bottom: none;
+}
+
+.search-dropdown-list li:hover {
+  background-color: #f0f0f0;
+}
+
+.selected-items-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+
+.selected-items-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #e9ecef;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 5px;
 }

@@ -1,57 +1,50 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import apiClient from '../apiClient';
-import { useAuth } from '../contexts/AuthContext';
 // @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import '../styles/Pages.css';
 
+// Tipo Aluno
 type Aluno = {
     matriculaAluno: string;
     nomeAluno: string;
-    idProjeto: number;
     idTurma: number;
+    idProjeto: number | null;
 };
 
 export default function CadastrarProjetoPage() {
     // Hooks
-    const navigate = useNavigate();
-    const { user } = useAuth();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Estados do formulário
     const [nomeProjeto, setNomeProjeto] = useState('');
     const [descricaoProjeto, setDescricaoProjeto] = useState('');
-    
-    // Estados de Aluno e banner
     const [banner, setBanner] = useState<File | null>(null);
-    const [alunos, setAlunos] = useState<string[]>([]); // Array de matrículas
-    const [alunoInput, setAlunoInput] = useState(''); // Input da matrícula
-
-    // Alunos selecionados
+    
+    // Estados da Busca de Alunos
     const [selectedAlunos, setSelectedAlunos] = useState<Aluno[]>([]);
-    // Termo de busca digitado pelo utilizador
     const [alunoSearch, setAlunoSearch] = useState('');
-    // Resultados da busca vindos da API
     const [searchResults, setSearchResults] = useState<Aluno[]>([]);
-    // Controle para mostrar/esconder o dropdown
     const [showDropdown, setShowDropdown] = useState(false);
+    const [isLoadingAlunos, setIsLoadingAlunos] = useState(false);
     
     // Estados de controle
     const [erro, setErro] = useState('');
     const [sucesso, setSucesso] = useState('');
-    const [alunoErro, setAlunoErro] = useState(''); // Erro específico para o input de matrícula
+    const [alunoErro, setAlunoErro] = useState('');
 
-    // Buscar alunos na API com debounce
+    // Efeito para buscar alunos (com debounce)
     useEffect(() => {
-        // Não busca se o campo estiver vazio
         if (alunoSearch.trim() === '') {
             setSearchResults([]);
             setShowDropdown(false);
+            setIsLoadingAlunos(false);
             return;
         }
 
+        setIsLoadingAlunos(true);
         // Debounce: espera 300ms após o utilizador parar de digitar
         const timer = setTimeout(() => {
+            // Chama a rota correta do backend
             apiClient.get(`/api/alunos/disponiveis?search=${alunoSearch}`)
                 .then(response => {
                     // Filtra alunos que já foram selecionados
@@ -61,12 +54,14 @@ export default function CadastrarProjetoPage() {
                     setSearchResults(availableAlunos);
                     setShowDropdown(availableAlunos.length > 0);
                 })
-                .catch(error => console.error("Erro ao buscar alunos", error));
+                .catch(error => console.error("Erro ao buscar alunos", error))
+                .finally(() => setIsLoadingAlunos(false));
         }, 300);
 
         return () => clearTimeout(timer); // Limpa o timer
-    }, [alunoSearch, selectedAlunos]); // Roda novamente quando a busca ou os selecionados mudam
+    }, [alunoSearch, selectedAlunos]);
 
+    // Handlers
     const handleBannerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
             setBanner(event.target.files[0]);
@@ -76,7 +71,7 @@ export default function CadastrarProjetoPage() {
     };
 
     const handleSelectAluno = (aluno: Aluno) => {
-        setAlunoErro(''); // Limpa erros antigos
+        setAlunoErro('');
         if (selectedAlunos.length >= 8) {
             setAlunoErro('Um projeto pode ter no máximo 8 alunos.');
             return;
@@ -84,7 +79,7 @@ export default function CadastrarProjetoPage() {
         if (!selectedAlunos.find(sa => sa.matriculaAluno === aluno.matriculaAluno)) {
             setSelectedAlunos([...selectedAlunos, aluno]);
         }
-        setAlunoSearch(''); // Limpa a busca
+        setAlunoSearch('');
         setSearchResults([]);
         setShowDropdown(false);
     };
@@ -93,77 +88,52 @@ export default function CadastrarProjetoPage() {
         setSelectedAlunos(selectedAlunos.filter(aluno => aluno.matriculaAluno !== alunoParaRemover.matriculaAluno));
     };
 
-    const handleAddAluno = () => {
-        setAlunoErro(''); // Limpa erros antigos
-        const matricula = alunoInput.trim();
-
-        if (matricula.length !== 11) {
-            setAlunoErro('A matrícula deve ter 11 caracteres.');
-            return;
-        }
-        if (alunos.includes(matricula)) {
-            setAlunoErro('Este aluno já foi adicionado ao projeto.');
-            return;
-        }
-        if (alunos.length >= 8) {
-            setAlunoErro('Um projeto pode ter no máximo 8 alunos.');
-            return;
-        }
-        
-        setAlunos([...alunos, matricula]);
-        setAlunoInput(''); // Limpa o input
-    };
-
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setErro('');
         setSucesso('');
 
-        // Validação de frontend antes de enviar
+        // Validação de mínimo 3 alunos
         if (selectedAlunos.length < 3) {
             setErro('O projeto deve ter no mínimo 3 alunos.');
-            return; // Para a submissão
+            return;
         }
 
         const formData = new FormData();
-
-        // Anexar todos os dados
         formData.append('nomeProjeto', nomeProjeto);
         formData.append('descricaoProjeto', descricaoProjeto);
+        
         if (banner) {
             formData.append('bannerProjeto', banner);
         }
 
-        // 3. Enviar apenas os IDs dos alunos selecionados
+        // Enviar as matrículas (PK) dos alunos
         selectedAlunos.forEach((aluno, index) => {
             formData.append(`alunos[${index}]`, aluno.matriculaAluno);
         });
 
         try {
-            // Enviar FormData
             await apiClient.post('/api/projetos', formData);
-
             setSucesso('Projeto cadastrado com sucesso!');
             
-            // Limpar o formulário
+            // Limpa o formulário
             setNomeProjeto('');
             setDescricaoProjeto('');
             setBanner(null);
             setSelectedAlunos([]);
             setAlunoSearch('');
             
-            // Limpar o input de arquivo
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
-
         } catch (error: any) {
             console.error("Erro ao cadastrar projeto", error);
-            if (error.response && error.response.status === 422) {
-                // Erros de validação do Laravel
+            if (error.response && error.response.status === 401) {
+                setErro('Acesso não autorizado. Verifique sua sessão.');
+            } else if (error.response && error.response.status === 422) {
                 const erros = error.response.data.errors;
-                if (erros.alunos || erros['alunos.0']) {
-                    setErro('Erro na seleção de alunos. Verifique se os alunos estão corretos e disponíveis.');
+                if (erros.alunos || (erros && Object.keys(erros).some(k => k.startsWith('alunos.')))) {
+                    setErro('Erro na seleção de alunos. Verifique se as matrículas são válidas e estão disponíveis.');
                 } else {
                     setErro('Erro de validação, verifique os campos.');
                 }
@@ -173,17 +143,6 @@ export default function CadastrarProjetoPage() {
         }
     };
 
-    // Proteção de Rota
-    if (!user) {
-        return (
-          <div className="page-container">
-              <h2>Acesso Negado</h2>
-              <p>Você precisa estar logado como Orientador para cadastrar um projeto.</p>
-              <button onClick={() => navigate('/login')}>Ir para Login</button>
-          </div>
-      );
-    }
-
     return (
         <div className="page-container">
             <div className="register-project-container">
@@ -192,39 +151,24 @@ export default function CadastrarProjetoPage() {
 
                     <div className="input-group">
                         <label htmlFor="nomeProjeto">Nome do Projeto</label>
-                        <input
-                            type="text" id="nomeProjeto"
-                            value={nomeProjeto}
-                            onChange={(e) => setNomeProjeto(e.target.value)}
-                            required
-                        />
+                        <input type="text" id="nomeProjeto" value={nomeProjeto} onChange={(e) => setNomeProjeto(e.target.value)} required />
                     </div>
 
                     <div className="input-group">
                         <label htmlFor="descricaoProjeto">Descrição</label>
-                        <textarea
-                            id="descricaoProjeto"
-                            value={descricaoProjeto}
-                            onChange={(e) => setDescricaoProjeto(e.target.value)}
-                            required
-                        />
+                        <textarea id="descricaoProjeto" value={descricaoProjeto} onChange={(e) => setDescricaoProjeto(e.target.value)} required />
                     </div>
 
                     <div className="input-group">
                         <label htmlFor="bannerProjeto">Banner do Projeto</label>
-                        <input
-                            type="file"
-                            id="bannerProjeto"
-                            accept="image/png, image/jpeg, image/gif"
-                            onChange={handleBannerChange}
-                            ref={fileInputRef}
-                        />
+                        <input type="file" id="bannerProjeto" accept=".jpeg, .jpg, .png, .pdf, .pptx" onChange={handleBannerChange} ref={fileInputRef} />
                         {banner && <p>Arquivo selecionado: {banner.name}</p>}
                     </div>
-                    
+
+                    {/* Sistema de Busca de Alunos */}
                     <div className="input-group">
                         <label htmlFor="alunoInput">Alunos (3 a 8)</label>
-                        <div className="aluno-search-container"> {/* (Precisa de CSS) */}
+                        <div className="search-dropdown-container">
                             <input
                                 type="text"
                                 id="alunoInput"
@@ -233,9 +177,10 @@ export default function CadastrarProjetoPage() {
                                 onChange={(e) => setAlunoSearch(e.target.value)}
                                 onFocus={() => setShowDropdown(true)}
                             />
-                            {/* Dropdown de resultados */}
+                            {isLoadingAlunos && <p>Buscando...</p>}
+                            
                             {showDropdown && searchResults.length > 0 && (
-                                <ul className="aluno-dropdown"> {/* (Precisa de CSS) */}
+                                <ul className="search-dropdown-list">
                                     {searchResults.map(aluno => (
                                         <li 
                                             key={aluno.matriculaAluno} 
@@ -250,8 +195,7 @@ export default function CadastrarProjetoPage() {
                         
                         {alunoErro && <p className="error-message">{alunoErro}</p>}
                         
-                        {/* Lista de alunos selecionados */}
-                        <ul className="aluno-list">
+                        <ul className="selected-items-list">
                             {selectedAlunos.map((aluno) => (
                                 <li key={aluno.matriculaAluno}>
                                     {aluno.nomeAluno} ({aluno.matriculaAluno})
