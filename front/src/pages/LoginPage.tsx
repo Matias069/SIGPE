@@ -2,8 +2,7 @@
 import "../styles/Pages.css";
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../apiClient';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/auth/useAuth';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -18,19 +17,28 @@ export default function LoginPage() {
     setErro('');
 
     try {
-      const response = await apiClient.post('/api/login', {
-        emailOrientador: email,
-        senhaOrientador: senha
-      });
+      const dadosUsuario = await login(email, senha);
 
-      login(response.data);
-      navigate('/cadastrar');
+      // Redireciona baseado no status de Admin
+      if (dadosUsuario.isAdmin) {
+        // Se for Admin, redireciona para a Home ('/')
+        navigate('/');
+      } else {
+        // Se for Orientador (não-Admin), redireciona para Cadastrar Projeto
+        navigate('/cadastrarprojeto');
+      }
 
     } catch (error: any) {
-      console.error('Falha no login', error);
-      if (error.response && error.response.status === 422) {
-        setErro(error.response.data.errors.emailOrientador[0]);
+      console.error('Erro no login:', error);
+      
+      if (error.response?.status === 422) {
+        // Erro de validação (campos vazios ou inválidos)
+        setErro(error.response.data.errors.emailOrientador?.[0] || 'Dados inválidos.');
+      } else if (error.response?.status === 419) {
+        // Erro de CSRF (Sessão expirada ou inválida)
+        setErro('Sessão expirada. Atualize a página e tente novamente.');
       } else {
+        // Outros erros (401 Credenciais incorretas, 500, etc)
         setErro('Email ou senha incorretos.');
       }
     }
@@ -53,6 +61,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
             />
           </div>
 
@@ -66,6 +75,7 @@ export default function LoginPage() {
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               required
+              autoComplete="current-password"
             />
           </div>
 

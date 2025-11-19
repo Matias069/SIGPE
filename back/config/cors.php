@@ -12,6 +12,8 @@ return [
 
     'allowed_origins' => ['*'],
 
+    'allowed_credentials' => true,
+
     'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
