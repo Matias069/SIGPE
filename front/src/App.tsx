@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import HomePage from "./pages/HomePage";
 import ProjectsPage from "./pages/ProjectsPage";
 import LoginPage from "./pages/LoginPage";
+import LogoutPage from "./pages/LogoutPage";
 import AccessPage from "./pages/AccessPage";
 import EvaluationPage from "./pages/EvaluationPage";
 import { AuthProvider } from "./contexts/auth/AuthProvider";
@@ -26,12 +27,15 @@ function App() {
           <Navbar />
           <div className="page-container">
             <Routes>
+              {/* Rotas Públicas */}
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/logout" element={<LogoutPage />} />
               <Route path="/projetos" element={<ProjectsPage />} />
               <Route path="/acessoavaliador" element={<AccessPage />} />
               <Route path="/avaliacao" element={<EvaluationPage />} />
-
+              
+              {/* Rotas do Administrador */}
               <Route element={<AdminRoute />}>
                 <Route path="/cadastraraluno" element={<CadastrarAlunoPage />} />
                 <Route path="/cadastrarorientador" element={<CadastrarOrientadorPage />} />
@@ -39,6 +43,7 @@ function App() {
                 <Route path="/cadastrarturma" element={<CadastrarTurmaPage />} />
               </Route>
 
+              {/* Rotas do Orientador (Admins também possuem acesso) */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/cadastrarprojeto" element={<CadastrarProjetoPage />} />
               </Route>

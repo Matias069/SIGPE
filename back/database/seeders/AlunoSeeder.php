@@ -16,7 +16,7 @@ class AlunoSeeder extends Seeder
         for ($i = 0; $i < $total; ++$i) {
             Aluno::create([
                 'matriculaAluno' => '20252008'.sprintf("%03d", $i),
-                'idProjeto' => $i+1, // Comente essa linha caso queira testar o cadastro de um projeto
+                //'idProjeto' => $i+1, // Comente essa linha caso queira testar o cadastro de um projeto
                 'idTurma' => $i+1,
                 'nomeAluno' => "Aluno Número ".($i+1),
             ]);
