@@ -26,7 +26,29 @@ class ProjetoController extends Controller
     {
         $validatedData = $request->validate([
             'nomeProjeto' => 'required|string|max:100',
-            'descricaoProjeto' => 'required|string|max:500',
+            'descricaoProjeto' => [
+                'required',
+                'string',
+                'max:5000', // Caracteres
+                function ($attribute, $value, $fail) {
+                    // Função inline para contar palavras (incluindo hífens e acentos)
+                    $contarPalavras = function ($texto) {
+                        // Utiliza regex (Regular Expression)
+                        // \p{L} = qualquer letra Unicode, \p{N} = qualquer número, [-'] permite hífen e apóstrofo
+                        preg_match_all("/[\p{L}\p{N}]+(?:[-'][\p{L}\p{N}]+)*/u", $texto, $correspondencias);
+                        return count($correspondencias[0]);
+                    };
+
+                    $quantidadePalavras = $contarPalavras($value);
+
+                    if ($quantidadePalavras < 250) {
+                        $fail("A descrição deve conter no mínimo 250 palavras (atualmente: $quantidadePalavras).");
+                    }
+                    if ($quantidadePalavras > 500) {
+                        $fail("A descrição pode conter no máximo 500 palavras (atualmente: $quantidadePalavras).");
+                    }
+                }
+            ],
             'bannerProjeto' => 'nullable|file|mimes:jpeg,png,jpg,pdf,pptx|max:2048', // 2MB max
             'alunos' => 'required|array|min:3|max:8',
             // idAluno

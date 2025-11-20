@@ -18,6 +18,7 @@ export default function CadastrarProjetoPage() {
     // Estados do formulário
     const [nomeProjeto, setNomeProjeto] = useState('');
     const [descricaoProjeto, setDescricaoProjeto] = useState('');
+    const [descricaoErro, setDescricaoErro] = useState('');
     const [banner, setBanner] = useState<File | null>(null);
     
     // Estados da Busca de Alunos
@@ -92,6 +93,7 @@ export default function CadastrarProjetoPage() {
         event.preventDefault();
         setErro('');
         setSucesso('');
+        setDescricaoErro('');
 
         // Validação de mínimo 3 alunos
         if (selectedAlunos.length < 3) {
@@ -132,9 +134,18 @@ export default function CadastrarProjetoPage() {
                 setErro('Acesso não autorizado. Verifique sua sessão.');
             } else if (error.response && error.response.status === 422) {
                 const erros = error.response.data.errors;
+                
+                // Capturar erro da descrição
+                if (erros.descricaoProjeto) {
+                    setDescricaoErro(erros.descricaoProjeto[0]);
+                }
+
+                // Capturar erro dos alunos
                 if (erros.alunos || (erros && Object.keys(erros).some(k => k.startsWith('alunos.')))) {
                     setErro('Erro na seleção de alunos. Verifique se as matrículas são válidas e estão disponíveis.');
-                } else {
+                }
+                
+                if (!erros.alunos && !erros.descricaoProjeto) {
                     setErro('Erro de validação, verifique os campos.');
                 }
             } else {
@@ -155,14 +166,37 @@ export default function CadastrarProjetoPage() {
                     </div>
 
                     <div className="input-group">
-                        <label htmlFor="descricaoProjeto">Descrição</label>
-                        <textarea id="descricaoProjeto" value={descricaoProjeto} onChange={(e) => setDescricaoProjeto(e.target.value)} required />
+                        <label htmlFor="descricaoProjeto">Descrição (entre 250 e 500 palavras)</label>
+                        <textarea
+                        id="descricaoProjeto"
+                        value={descricaoProjeto}
+                        onChange={(e) => {
+                            setDescricaoProjeto(e.target.value);
+                            setDescricaoErro('');
+                        }}
+                        required
+                    />
+                    {descricaoErro && <p className="error-message">{descricaoErro}</p>}
                     </div>
 
                     <div className="input-group">
-                        <label htmlFor="bannerProjeto">Banner do Projeto</label>
+                        <label htmlFor="bannerProjeto">Banner do Projeto (Opcional)</label>
                         <input type="file" id="bannerProjeto" accept=".jpeg, .jpg, .png, .pdf, .pptx" onChange={handleBannerChange} ref={fileInputRef} />
-                        {banner && <p>Arquivo selecionado: {banner.name}</p>}
+                        {banner && (
+                            <div style={{ marginTop: '4px' }}>
+                                <p>Arquivo selecionado: {banner.name}</p>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setBanner(null);
+                                        if (fileInputRef.current) fileInputRef.current.value = '';
+                                    }}
+                                    style={{ marginTop: '4px' }}
+                                >
+                                    Remover banner
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* Sistema de Busca de Alunos */}
@@ -192,7 +226,6 @@ export default function CadastrarProjetoPage() {
                                 </ul>
                             )}
                         </div>
-                        
                         {alunoErro && <p className="error-message">{alunoErro}</p>}
                         
                         <ul className="selected-items-list">

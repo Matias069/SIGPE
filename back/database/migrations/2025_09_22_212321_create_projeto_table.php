@@ -15,7 +15,7 @@ return new class extends Migration
             $table->increments('idProjeto');
             $table->unsignedInteger('idOrientador');
             $table->string('nomeProjeto', 100);
-            $table->string('descricaoProjeto', 500);
+            $table->string('descricaoProjeto', 5000);
             $table->string('bannerProjeto')->nullable();
 
             $table->foreign('idOrientador')->references('idOrientador')->on('orientador');

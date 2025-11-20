@@ -23,7 +23,7 @@ export default function Navbar()
       { name: "Cadastrar Turma", path: "/cadastrarturma" },
     );
   }
-  if (isAuthenticated && !isAdmin){
+  if (isAuthenticated){
     navItems.push(
       { name: "Cadastrar Projeto", path: "/cadastrarprojeto" },
     );
