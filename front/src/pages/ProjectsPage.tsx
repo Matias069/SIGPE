@@ -51,6 +51,58 @@ export default function ProjetosPage() {
     // Função para mudar de página
     const mudarPagina = (numeroPagina: number) => setPaginaAtual(numeroPagina);
 
+    // Função para gerar a lista de botões de paginação
+    const getPageNumbers = () => {
+        const pageNumbers: (number | string)[] = [];
+        const maxPagesToShow = 12; // Quantidade de botões numéricos desejada
+
+        if (totalPaginas <= maxPagesToShow) {
+            // Se houver menos páginas que o limite, mostra todas
+            for (let i = 1; i <= totalPaginas; i++) {
+                pageNumbers.push(i);
+            }
+        } else {
+            // Calcula quantos slots temos para o meio (excluindo primeira e última)
+            const slots = maxPagesToShow - 2; 
+            
+            if (paginaAtual <= slots) {
+                // Cenário: Perto do início
+                // Mostra 1 até (slots + 1) ... Última
+                for (let i = 1; i <= slots + 1; i++) {
+                    pageNumbers.push(i);
+                }
+                pageNumbers.push('...');
+                pageNumbers.push(totalPaginas);
+            } else if (paginaAtual > totalPaginas - slots) {
+                // Cenário: Perto do fim
+                // Mostra 1 ... (Última - slots) até Última
+                pageNumbers.push(1);
+                pageNumbers.push('...');
+                for (let i = totalPaginas - slots; i <= totalPaginas; i++) {
+                    pageNumbers.push(i);
+                }
+            } else {
+                // Cenário: No meio
+                // Mostra 1 ... janela central ... Última
+                pageNumbers.push(1);
+                pageNumbers.push('...');
+                
+                // Define a janela centralizada na página atual
+                const sideLength = Math.floor(slots / 2); 
+                const start = paginaAtual - sideLength + 1;
+                const end = paginaAtual + sideLength;
+                
+                for (let i = start; i <= end; i++) {
+                    pageNumbers.push(i);
+                }
+                
+                pageNumbers.push('...');
+                pageNumbers.push(totalPaginas);
+            }
+        }
+        return pageNumbers;
+    };
+
     if (loading) {
         return <div className="page-container"><h2>Carregando projetos...</h2></div>;
     }
@@ -80,30 +132,46 @@ export default function ProjetosPage() {
 
             {/* Controles de Paginação */}
             {totalPaginas > 1 && (
-                <div className="pagination" style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
+                <div className="pagination" style={{ display: 'flex', justifyContent: 'center', gap: '5px', marginTop: '20px', flexWrap: 'wrap' }}>
                     <button 
                         onClick={() => mudarPagina(paginaAtual - 1)} 
                         disabled={paginaAtual === 1}
                         style={{ padding: '8px 12px', cursor: 'pointer' }}
                     >
-                        Anterior
+                        {"<"}
                     </button>
                     
-                    {[...Array(totalPaginas)].map((_, index) => (
-                        <button
-                            key={index + 1}
-                            onClick={() => mudarPagina(index + 1)}
-                            style={{
-                                padding: '8px 12px',
-                                cursor: 'pointer',
-                                backgroundColor: paginaAtual === index + 1 ? '#28a745' : '#f0f0f0',
-                                color: paginaAtual === index + 1 ? 'white' : 'black',
-                                border: '1px solid #ccc',
-                                borderRadius: '4px'
-                            }}
-                        >
-                            {index + 1}
-                        </button>
+                    {getPageNumbers().map((page, index) => (
+                        typeof page === 'number' ? (
+                            <button
+                                key={index}
+                                onClick={() => mudarPagina(page)}
+                                style={{
+                                    padding: '8px 12px',
+                                    cursor: 'pointer',
+                                    backgroundColor: paginaAtual === page ? '#28a745' : '#f0f0f0',
+                                    color: paginaAtual === page ? 'white' : 'black',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '4px'
+                                }}
+                            >
+                                {page}
+                            </button>
+                        ) : (
+                            <button
+                                key={index}
+                                disabled
+                                style={{
+                                    padding: '8px 12px',
+                                    cursor: 'default',
+                                    backgroundColor: 'transparent',
+                                    color: 'black',
+                                    border: 'none'
+                                }}
+                            >
+                                {page}
+                            </button>
+                        )
                     ))}
 
                     <button 
@@ -111,7 +179,7 @@ export default function ProjetosPage() {
                         disabled={paginaAtual === totalPaginas}
                         style={{ padding: '8px 12px', cursor: 'pointer' }}
                     >
-                        Próximo
+                        {">"}
                     </button>
                 </div>
             )}
