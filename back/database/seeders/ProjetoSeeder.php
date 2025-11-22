@@ -13,7 +13,7 @@ class ProjetoSeeder extends Seeder
     public function run(): void
     {
         $total = 1000;
-        for ($i = 0; $i < $total; ++$i) {
+        for ($i = 0; $i <= $total; ++$i) {
             Projeto::create([
                 'idOrientador' => 2, // Orientador é o mesmo número para testes
                 'nomeProjeto' => "Projeto Número ".($i+1),

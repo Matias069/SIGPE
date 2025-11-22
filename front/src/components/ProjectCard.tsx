@@ -1,9 +1,11 @@
+import { Link } from 'react-router-dom';
 import ImgExpocanpi from '../assets/Img_Expocanpi.jpg'; // Usaremos esta como imagem padrão
 // @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import '../styles/Pages.css';
 
 // Definir a interface para as props que o Card vai receber
 interface ProjectCardProps {
+    id: number;
     title: string;
     description: string;
     imageUrl: string | null; // O banner pode ser nulo
@@ -12,7 +14,7 @@ interface ProjectCardProps {
 // Definir a URL base do seu backend para construir o link da imagem
 const BACKEND_URL = 'http://localhost:8000';
 
-export function ProjectCard({ title, description, imageUrl }: ProjectCardProps) {
+export function ProjectCard({ id, title, description, imageUrl }: ProjectCardProps) {
     
     // Lógica para decidir qual imagem mostrar
     // Se 'imageUrl' existir, constrói o caminho completo. 
@@ -30,9 +32,17 @@ export function ProjectCard({ title, description, imageUrl }: ProjectCardProps) 
         <div className="project-card">
             <img src={finalImageUrl} alt={`Banner do ${title}`} />
             <div className="card-content">
-                <h3>{title}</h3>
-                <p>{truncate(description, 100)}</p>
-                <a href="#" className="detail-button">Ver mais</a>
+                <h3 className="card-titulo">{title}</h3>
+                <p className="card-resumo">{truncate(description, 100)}</p>
+
+                {/* Link para a página de acesso do avaliador específica deste projeto */}
+                <Link 
+                    to={`/projetos/${id}/acessoavaliador`} 
+                    className="detail-button"
+                    style={{textDecoration: 'none', marginTop: 'auto'}}
+                >
+                    Avaliar Projeto
+                </Link>
             </div>
         </div>
     );

@@ -122,6 +122,7 @@ export default function ProjetosPage() {
                     projetosAtuais.map(projeto => (
                         <ProjectCard
                             key={projeto.idProjeto}
+                            id={projeto.idProjeto}
                             title={projeto.nomeProjeto}
                             description={projeto.descricaoProjeto}
                             imageUrl={projeto.bannerProjeto}

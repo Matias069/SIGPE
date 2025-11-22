@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import apiClient from '../apiClient';
 // @ts-ignore: Importação de CSS
 import '../styles/Pages.css'; 
 
@@ -10,22 +12,51 @@ const criteriosFixos = [
     "Consistência na arguição"
 ];
 
-// Mock de alunos para exemplo (em uma aplicação real, viria do backend/projeto selecionado)
-const alunosMock = [
-    { id: 1, nome: "Ana Silva" },
-    { id: 2, nome: "Bruno Oliveira" },
-    { id: 3, nome: "Carla Souza" },
-    { id: 4, nome: "Daniel Ferreira" }
-];
+// Tipagem para os dados que virão da API
+type Aluno = {
+    matriculaAluno: string;
+    nomeAluno: string;
+};
+
+type Orientador = {
+    nomeOrientador: string;
+};
+
+type ProjetoDetalhado = {
+    idProjeto: number;
+    nomeProjeto: string;
+    orientador: Orientador;
+    alunos: Aluno[];
+};
 
 export default function EvaluationPage() {
-    // Notas dos 5 critérios
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [projeto, setProjeto] = useState<ProjetoDetalhado | null>(null);
+    const [loading, setLoading] = useState(true);
+    
+    // Estados do formulário
     const [notas, setNotas] = useState<number[]>(new Array(5).fill(0));
-    
-    // Controle de faltas (Set de IDs dos alunos que faltaram)
-    const [faltas, setFaltas] = useState<Set<number>>(new Set());
-    
+    // Armazena as matrículas dos alunos que faltaram
+    const [faltas, setFaltas] = useState<Set<string>>(new Set());
     const [observacoes, setObservacoes] = useState('');
+
+    useEffect(() => {
+        const fetchProjeto = async () => {
+            try {
+                setLoading(true);
+                const response = await apiClient.get(`/projetos/${id}`);
+                setProjeto(response.data);
+            } catch (error) {
+                console.error("Erro ao carregar projeto", error);
+                alert("Erro ao carregar dados do projeto.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (id) fetchProjeto();
+    }, [id]);
 
     const handleNotaChange = (index: number, novaNota: string) => {
         const novasNotas = [...notas];
@@ -33,28 +64,39 @@ export default function EvaluationPage() {
         setNotas(novasNotas);
     };
 
-    const toggleFalta = (idAluno: number) => {
+    const toggleFalta = (matricula: string) => {
         const novasFaltas = new Set(faltas);
-        if (novasFaltas.has(idAluno)) {
-            novasFaltas.delete(idAluno);
+        if (novasFaltas.has(matricula)) {
+            novasFaltas.delete(matricula);
         } else {
-            novasFaltas.add(idAluno);
+            novasFaltas.add(matricula);
         }
         setFaltas(novasFaltas);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const media = notas.reduce((a, b) => a + b, 0) / notas.length;
         
-        console.log("--- Dados da Avaliação ---");
-        console.log("Notas:", notas);
-        console.log("Média Final:", media.toFixed(2));
-        console.log("Alunos que faltaram (IDs):", Array.from(faltas));
-        console.log("Observações:", observacoes);
+        // Estrutura do payload para envio futuro ao backend
+        const payload = {
+            idProjeto: projeto?.idProjeto,
+            notas: notas, // Array com as 5 notas
+            mediaFinal: parseFloat(media.toFixed(2)),
+            alunosFaltantes: Array.from(faltas), // Lista de matrículas
+            observacoes: observacoes
+        };
+
+        console.log("--- Enviando Avaliação ---", payload);
         
-        alert(`Avaliação enviada!\nMédia calculada: ${media.toFixed(2)}`);
+        // Aqui entraria a chamada: await apiClient.post('/avaliar', payload);
+        
+        alert(`Avaliação registrada com sucesso!\nProjeto: ${projeto?.nomeProjeto}\nMédia: ${media.toFixed(2)}`);
+        navigate('/'); // Volta para a home ou lista de projetos
     };
+
+    if (loading) return <div className="page-container"><h2>Carregando ficha de avaliação...</h2></div>;
+    if (!projeto) return <div className="page-container"><h2>Projeto não encontrado.</h2></div>;
 
     return (
         <div className="evaluation-container">
@@ -68,21 +110,25 @@ export default function EvaluationPage() {
                     <div className="evaluation-header">
                         <div className="header-row">
                             <div className="input-group-underline">
-                                <label>Nome do Projeto</label>
+                                <label className="header-label">Nome do Projeto</label>
                                 <input 
                                     type="text" 
-                                    className="input-underline" 
-                                    placeholder="Projeto de Inovação Tecnológica..."
+                                    className="input-underline read-only-field"
+                                    value={projeto.nomeProjeto}
+                                    readOnly
+                                    style={{ fontWeight: 'bold', color: '#333' }}
                                 />
                             </div>
                         </div>
                         <div className="header-row">
                             <div className="input-group-underline">
-                                <label>Professor Orientador</label>
+                                <label className="header-label">Professor Orientador</label>
                                 <input 
                                     type="text" 
-                                    className="input-underline" 
-                                    placeholder="Nome do Professor..."
+                                    className="input-underline read-only-field"
+                                    value={projeto.orientador.nomeOrientador}
+                                    readOnly
+                                    style={{ fontWeight: 'bold', color: '#333' }}
                                 />
                             </div>
                         </div>
@@ -124,21 +170,30 @@ export default function EvaluationPage() {
                         ))}
                     </div>
 
-                    {/* Checkbox de Presença (Entre Critérios e Observações) */}
+                    {/* Checkbox de Presença */}
                     <div className="attendance-section">
                         <div className="attendance-title">Registro de Ausências</div>
-                        <div className="students-grid">
-                            {alunosMock.map((aluno) => (
-                                <label key={aluno.id} className="checkbox-wrapper">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={faltas.has(aluno.id)}
-                                        onChange={() => toggleFalta(aluno.id)}
-                                    />
-                                    <span className="student-name">{aluno.nome}</span>
-                                </label>
-                            ))}
-                        </div>
+                        
+                        {projeto.alunos && projeto.alunos.length > 0 ? (
+                            <div className="students-grid">
+                                {projeto.alunos.map((aluno) => (
+                                    <label key={aluno.matriculaAluno} className="checkbox-wrapper">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={faltas.has(aluno.matriculaAluno)}
+                                            onChange={() => toggleFalta(aluno.matriculaAluno)}
+                                        />
+                                        <span className="student-name">
+                                            {aluno.nomeAluno}
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
+                        ) : (
+                            <p style={{color: '#666', fontStyle: 'italic'}}>
+                                Nenhum aluno vinculado a este projeto.
+                            </p>
+                        )}
                     </div>
 
                     {/* Rodapé e Botões */}
@@ -156,7 +211,11 @@ export default function EvaluationPage() {
                         </div>
 
                         <div className="form-actions">
-                            <button type="button" className="btn-cancel" onClick={() => window.history.back()}>
+                            <button 
+                                type="button" 
+                                className="btn-cancel" 
+                                onClick={() => navigate('/')}
+                            >
                                 Cancelar
                             </button>
                             <button type="submit" className="btn-submit">

@@ -14,6 +14,8 @@ Route::post('/login', [AuthOrientadorController::class, 'login']);
 
 // Listar todos os projetos
 Route::get('/projetos', [ProjetoController::class, 'index']);
+// Buscar um projeto específico
+Route::get('/projetos/{id}', [ProjetoController::class, 'show']);
 
 // Rotas Privadas
 Route::middleware('auth:sanctum')->group(function () {

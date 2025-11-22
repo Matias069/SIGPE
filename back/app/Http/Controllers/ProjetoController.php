@@ -16,7 +16,8 @@ class ProjetoController extends Controller
      */
     public function index()
     {
-        return Projeto::all();
+        // Carrega o orientador junto para listagens otimizadas
+        return Projeto::with('orientador')->get();
     }
 
     /**
@@ -115,7 +116,14 @@ class ProjetoController extends Controller
      */
     public function show(string $id)
     {
-        //
+        // Busca o projeto pelo ID, trazendo os dados do Orientador e dos Alunos associados
+        $projeto = Projeto::with(['orientador', 'alunos'])->find($id);
+
+        if (!$projeto) {
+            return response()->json(['message' => 'Projeto não encontrado'], 404);
+        }
+
+        return response()->json($projeto);
     }
 
     /**

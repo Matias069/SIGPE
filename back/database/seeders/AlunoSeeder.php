@@ -12,14 +12,27 @@ class AlunoSeeder extends Seeder
      */
     public function run(): void
     {
-        $total = 100;
+        $total = 3500;
         for ($i = 0; $i < $total; ++$i) {
-            Aluno::create([
-                'matriculaAluno' => '20252008'.sprintf("%03d", $i),
-                //'idProjeto' => $i+1, // Comente essa linha caso queira testar o cadastro de um projeto
-                'idTurma' => $i+1,
-                'nomeAluno' => "Aluno Número ".($i+1),
-            ]);
+            // Turma muda a cada 350 alunos
+            $idTurma = intdiv($i, 350) + 1;
+
+            if ($i<=3000) {
+                Aluno::create([
+                    'matriculaAluno' => '2025'.sprintf("%07d", $i),
+                    // Projetos em grupos de 3 alunos
+                    'idProjeto' => intdiv($i, 3),
+                    'idTurma' => $idTurma+1,
+                    'nomeAluno' => "Aluno Número ".($i+1),
+                ]);
+            } else {
+                Aluno::create([
+                    'matriculaAluno' => '2025'.sprintf("%07d", $i),
+                    // Alunos sem projeto
+                    'idTurma' => $idTurma+1,
+                    'nomeAluno' => "Aluno Número ".($i+1),
+                ]);
+            }
         }
     }
 }

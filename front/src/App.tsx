@@ -32,8 +32,10 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/logout" element={<LogoutPage />} />
               <Route path="/projetos" element={<ProjectsPage />} />
-              <Route path="/acessoavaliador" element={<AccessPage />} />
-              <Route path="/avaliacao" element={<EvaluationPage />} />
+              
+              {/* Rotas de Avaliação (Públicas mas com senha) */}
+              <Route path="/projetos/:id/acessoavaliador" element={<AccessPage />} />
+              <Route path="/projetos/:id/avaliacao" element={<EvaluationPage />} />
               
               {/* Rotas do Administrador */}
               <Route element={<AdminRoute />}>
