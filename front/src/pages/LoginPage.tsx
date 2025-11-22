@@ -3,6 +3,7 @@ import "../styles/Pages.css";
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/auth/useAuth';
+import { handleApiError } from '../utils/errorHandler';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -31,26 +32,13 @@ export default function LoginPage() {
           }
       } else {
           // Se login não jogou erro mas também não retornou user
-          setErro('Erro ao obter dados do usuário.');
+          setErro('Não foi possível obter os dados do usuário.');
       }
 
     } catch (error: any) {
       console.error('Erro de Login:', error);
-
-      if (!error.response) {
-         // Erro de rede (backend desligado ou CORS)
-         setErro('Erro de conexão com o servidor.');
-      } else if (error.response.status === 401) {
-         // 401 = Unauthorized (Senha ou Email errados)
-         setErro('Email ou senha incorretos.');
-      } else if (error.response.status === 422) {
-         // 422 = Erro de Validação do Laravel
-         const msg = error.response.data.errors?.emailOrientador?.[0];
-         setErro(msg || 'Dados inválidos preenchidos.');
-      } else {
-         // Outros erros (500, 404, etc)
-         setErro('Ocorreu um erro inesperado. Tente novamente.');
-      }
+      const msg = handleApiError(error, 'Falha ao entrar. Verifique suas credenciais.');
+      setErro(msg);
     } finally {
       setIsLoading(false);
     }
@@ -91,7 +79,20 @@ export default function LoginPage() {
             />
           </div>
 
-          {erro && <p className="error-message">{erro}</p>}
+          {erro && (
+            <div className="error-message" style={{
+                color: '#721c24', 
+                backgroundColor: '#f8d7da', 
+                borderColor: '#f5c6cb', 
+                padding: '10px', 
+                marginTop: '10px', 
+                borderRadius: '5px',
+                fontSize: '0.9rem',
+                textAlign: 'center'
+            }}>
+                {erro}
+            </div>
+          )}
 
           <button type="submit" className="login-button" disabled={isLoading}>
             {isLoading ? 'Entrando...' : 'Entrar'}

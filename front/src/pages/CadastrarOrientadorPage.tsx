@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import apiClient from '../apiClient';
 // @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import '../styles/Pages.css';
-
+import { handleApiError } from "../utils/errorHandler";
 
 export default function CadastrarOrientadorPage() {
     const [formData, setFormData] = useState({
@@ -34,13 +34,9 @@ export default function CadastrarOrientadorPage() {
             await apiClient.post('/orientadores', formData);
             setSucesso('Orientador cadastrado com sucesso!');
             setFormData({ nomeOrientador: '', emailOrientador: '', senhaOrientador: '', isAdmin: false });
-        } catch (error: any) {
+        } catch (error) {
             console.error("Erro ao cadastrar orientador", error);
-            if (error.response && error.response.status === 422) {
-                setErro('Erro de validação: ' + JSON.stringify(error.response.data.errors));
-            } else {
-                setErro('Ocorreu um erro ao cadastrar o orientador.');
-            }
+            setErro(handleApiError(error, "Ocorreu um erro ao cadastrar o orientador."));
         }
     };
 
@@ -70,7 +66,21 @@ export default function CadastrarOrientadorPage() {
                         <label htmlFor="isAdmin">Este orientador é um Administrador?</label>
                     </div>
 
-                    {erro && <p className="error-message">{erro}</p>}
+                    {erro && (
+                        <div className="error-message" style={{
+                            color: '#721c24', 
+                            backgroundColor: '#f8d7da', 
+                            borderColor: '#f5c6cb', 
+                            padding: '10px', 
+                            marginTop: '10px', 
+                            borderRadius: '5px',
+                            fontSize: '0.9rem',
+                            textAlign: 'center'
+                        }}>
+                            {erro}
+                        </div>
+                    )}
+
                     {sucesso && <p className="success-message">{sucesso}</p>}
 
                     <button type="submit" className="register-button">Cadastrar</button>

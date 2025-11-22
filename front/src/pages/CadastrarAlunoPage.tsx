@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../apiClient';
 // @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import '../styles/Pages.css';
+import { handleApiError } from "../utils/errorHandler";
 
 // Tipo para a Turma
 type Turma = {
@@ -49,7 +50,7 @@ export default function CadastrarAlunoPage() {
                 })
                 .catch(err => {
                     console.error("Erro ao buscar turmas", err);
-                    setErro("Não foi possível carregar as turmas.");
+                    setErro(handleApiError(err, "Não foi possível carregar as turmas."));
                 })
                 .finally(() => setIsLoadingTurmas(false));
         }, 300);
@@ -85,13 +86,9 @@ export default function CadastrarAlunoPage() {
             setSucesso('Aluno cadastrado com sucesso!');
             setFormData({ nomeAluno: '', matriculaAluno: '', idTurma: '' });
             setSelectedTurma(null);
-        } catch (error: any) {
+        } catch (error) {
             console.error("Erro ao cadastrar aluno", error);
-            if (error.response && error.response.status === 422) {
-                setErro('Erro de validação: ' + JSON.stringify(error.response.data.errors));
-            } else {
-                setErro('Ocorreu um erro ao cadastrar o aluno.');
-            }
+            setErro(handleApiError(error, "Ocorreu um erro ao cadastrar o aluno."));
         }
     };
 
@@ -143,7 +140,21 @@ export default function CadastrarAlunoPage() {
                         </div>
                     </div>
 
-                    {erro && <p className="error-message">{erro}</p>}
+                    {erro && (
+                        <div className="error-message" style={{
+                            color: '#721c24', 
+                            backgroundColor: '#f8d7da', 
+                            borderColor: '#f5c6cb', 
+                            padding: '10px', 
+                            marginTop: '10px', 
+                            borderRadius: '5px',
+                            fontSize: '0.9rem',
+                            textAlign: 'center'
+                        }}>
+                            {erro}
+                        </div>
+                    )}
+
                     {sucesso && <p className="success-message">{sucesso}</p>}
 
                     <button type="submit" className="register-button">Cadastrar</button>

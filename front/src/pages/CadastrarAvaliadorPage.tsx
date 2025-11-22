@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import apiClient from '../apiClient';
 // @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import '../styles/Pages.css';
+import { handleApiError } from "../utils/errorHandler";
 
 export default function CadastrarAvaliadorPage() {
     const [formData, setFormData] = useState({
@@ -26,13 +27,9 @@ export default function CadastrarAvaliadorPage() {
             await apiClient.post('/avaliadores', formData);
             setSucesso('Avaliador cadastrado com sucesso!');
             setFormData({ nomeAvaliador: '', emailAvaliador: '', matriculaSiape: '' });
-        } catch (error: any) {
+        } catch (error) {
             console.error("Erro ao cadastrar avaliador", error);
-            if (error.response && error.response.status === 422) {
-                setErro('Erro de validação: ' + JSON.stringify(error.response.data.errors));
-            } else {
-                setErro('Ocorreu um erro ao cadastrar o avaliador.');
-            }
+            setErro(handleApiError(error, "Ocorreu um erro ao cadastrar o avaliador."));
         }
     };
 
@@ -57,7 +54,21 @@ export default function CadastrarAvaliadorPage() {
                         <input type="text" id="matriculaSiape" name="matriculaSiape" value={formData.matriculaSiape} onChange={handleChange} maxLength={8} required />
                     </div>
 
-                    {erro && <p className="error-message">{erro}</p>}
+                    {erro && (
+                        <div className="error-message" style={{
+                            color: '#721c24', 
+                            backgroundColor: '#f8d7da', 
+                            borderColor: '#f5c6cb', 
+                            padding: '10px', 
+                            marginTop: '10px', 
+                            borderRadius: '5px',
+                            fontSize: '0.9rem',
+                            textAlign: 'center'
+                        }}>
+                            {erro}
+                        </div>
+                    )}
+
                     {sucesso && <p className="success-message">{sucesso}</p>}
 
                     <button type="submit" className="register-button">Cadastrar</button>

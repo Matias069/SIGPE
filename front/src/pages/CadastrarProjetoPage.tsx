@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import apiClient from '../apiClient';
 // @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import '../styles/Pages.css';
+import { handleApiError } from "../utils/errorHandler";
 
 // Tipo Aluno
 type Aluno = {
@@ -55,7 +56,10 @@ export default function CadastrarProjetoPage() {
                     setSearchResults(availableAlunos);
                     setShowDropdown(availableAlunos.length > 0);
                 })
-                .catch(error => console.error("Erro ao buscar alunos", error))
+                .catch(error => {
+                    console.error("Erro ao buscar alunos", error);
+                    setErro(handleApiError(error, "Não foi possível carregar os alunos."));
+                })
                 .finally(() => setIsLoadingAlunos(false));
         }, 300);
 
@@ -128,28 +132,20 @@ export default function CadastrarProjetoPage() {
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error("Erro ao cadastrar projeto", error);
-            if (error.response && error.response.status === 401) {
-                setErro('Acesso não autorizado. Verifique sua sessão.');
-            } else if (error.response && error.response.status === 422) {
-                const erros = error.response.data.errors;
-                
-                // Capturar erro da descrição
-                if (erros.descricaoProjeto) {
-                    setDescricaoErro(erros.descricaoProjeto[0]);
-                }
 
-                // Capturar erro dos alunos
-                if (erros.alunos || (erros && Object.keys(erros).some(k => k.startsWith('alunos.')))) {
-                    setErro('Erro na seleção de alunos. Verifique se as matrículas são válidas e estão disponíveis.');
-                }
-                
-                if (!erros.alunos && !erros.descricaoProjeto) {
-                    setErro('Erro de validação, verifique os campos.');
-                }
-            } else {
-                setErro('Ocorreu um erro ao cadastrar o projeto.');
+            // Erro genérico tratado pelo handler
+            const mensagem = handleApiError(error, "Ocorreu um erro ao cadastrar o projeto.");
+            setErro(mensagem);
+
+            // Tratamento específico para campos individuais (se existirem)
+            if (error instanceof Error || !(error as any).response) return;
+
+            const data = (error as any).response.data;
+
+            if (data?.errors?.descricaoProjeto) {
+                setDescricaoErro(data.errors.descricaoProjeto[0]);
             }
         }
     };
@@ -240,7 +236,21 @@ export default function CadastrarProjetoPage() {
                         </ul>
                     </div>
                     
-                    {erro && <p className="error-message">{erro}</p>}
+                    {erro && (
+                        <div className="error-message" style={{
+                            color: '#721c24', 
+                            backgroundColor: '#f8d7da', 
+                            borderColor: '#f5c6cb', 
+                            padding: '10px', 
+                            marginTop: '10px', 
+                            borderRadius: '5px',
+                            fontSize: '0.9rem',
+                            textAlign: 'center'
+                        }}>
+                            {erro}
+                        </div>
+                    )}
+
                     {sucesso && <p className="success-message">{sucesso}</p>}
 
                     <button type="submit" className="register-button">Cadastrar</button>

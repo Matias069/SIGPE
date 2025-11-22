@@ -2,6 +2,7 @@
 import "../styles/Pages.css";
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/auth/useAuth";
+import { handleApiError } from "../utils/errorHandler";
 
 export default function LogoutPage() {
   const [erro, setErro] = useState("");
@@ -15,7 +16,7 @@ export default function LogoutPage() {
         await logout();
       } catch (error: any) {
         console.error("Erro no logout:", error);
-        setErro("Não foi possível encerrar sua sessão.");
+        setErro(handleApiError(error, "Não foi possível encerrar sua sessão."));
       } finally {
         setIsLoading(false);
       }
@@ -31,7 +32,20 @@ export default function LogoutPage() {
           <h2>Saindo...</h2>
 
           {isLoading && <p>Encerrando sua sessão...</p>}
-          {erro && <p className="error-message">{erro}</p>}
+          {erro && (
+              <div className="error-message" style={{
+                  color: '#721c24', 
+                  backgroundColor: '#f8d7da', 
+                  borderColor: '#f5c6cb', 
+                  padding: '10px', 
+                  marginTop: '10px', 
+                  borderRadius: '5px',
+                  fontSize: '0.9rem',
+                  textAlign: 'center'
+              }}>
+                  {erro}
+              </div>
+          )}
         </div>
       </div>
     </div>
