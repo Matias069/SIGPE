@@ -19,7 +19,7 @@ export default function ProjetosPage() {
     
     // Estado para paginação
     const [paginaAtual, setPaginaAtual] = useState(1);
-    const projetosPorPagina = 9;
+    const projetosPorPagina = 12;
 
     // Buscar os dados da API
     useEffect(() => {

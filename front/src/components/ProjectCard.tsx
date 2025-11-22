@@ -32,7 +32,7 @@ export function ProjectCard({ title, description, imageUrl }: ProjectCardProps) 
             <div className="card-content">
                 <h3>{title}</h3>
                 <p>{truncate(description, 100)}</p>
-                <a href="#">Ver mais</a>
+                <a href="#" className="detail-button">Ver mais</a>
             </div>
         </div>
     );

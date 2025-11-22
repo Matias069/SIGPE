@@ -124,14 +124,15 @@
   background-color: #003a87;
 }
 
-/* Container dos cards */
+/* Container geral dos cards */
 .cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
   margin-top: 20px;
   width: 100%;
+  grid-template-columns: repeat(3, 1fr); /* Máximo 3 colunas */
 }
+
 
 /* Card individual */
 .card-projeto {
@@ -952,4 +953,65 @@
 
 .btn-submit:hover {
     background-color: #1b4332;
+}
+
+/* Botão de "Ver mais" dos projetos */
+.detail-button {
+  display: inline-block;
+  padding: 12px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  margin-top: 10px; 
+  margin-right: auto;
+}
+
+.project-card {
+  background: #dff5e4;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.project-card img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Projetos dentro do container */
+.projects-grid {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+  grid-template-columns: repeat(3, 1fr); /* Máximo 3 colunas */
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .cards-container,
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 colunas para telas médias */
+  }
+}
+
+@media (max-width: 600px) {
+  .cards-container,
+  .projects-grid {
+    grid-template-columns: 1fr; /* 1 coluna para telas pequenas */
+  }
 }
