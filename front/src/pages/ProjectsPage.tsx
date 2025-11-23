@@ -18,6 +18,28 @@ export default function ProjetosPage() {
     const [loading, setLoading] = useState(true);
     const [erro, setErro] = useState('');
     
+    // Estados da busca
+    const [busca, setBusca] = useState("");
+    const [buscaDebounced, setBuscaDebounced] = useState("");
+    const [isSearching, setIsSearching] = useState(false);
+
+    // Debounce – espera 300ms antes de aplicar o filtro
+    useEffect(() => {
+        if (busca.trim() !== "") {
+            setIsSearching(true);
+        } else {
+            setIsSearching(false);
+        }
+
+        const timer = setTimeout(() => {
+            setBuscaDebounced(busca);
+            setPaginaAtual(1); // Volta para página 1 após buscar
+            setIsSearching(false);
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [busca]);
+
     // Estado para paginação
     const [paginaAtual, setPaginaAtual] = useState(1);
     const projetosPorPagina = 12;
@@ -41,11 +63,16 @@ export default function ProjetosPage() {
         fetchProjetos();
     }, []);
 
+    // Filtrar projetos com o valor debounced
+    const projetosFiltrados = projetos.filter((p) =>
+        p.nomeProjeto?.toLowerCase().includes(buscaDebounced.toLowerCase())
+    );
+
     // Lógica de Paginação
     const indexUltimoProjeto = paginaAtual * projetosPorPagina;
     const indexPrimeiroProjeto = indexUltimoProjeto - projetosPorPagina;
-    const projetosAtuais = projetos.slice(indexPrimeiroProjeto, indexUltimoProjeto);
-    const totalPaginas = Math.ceil(projetos.length / projetosPorPagina);
+    const projetosAtuais = projetosFiltrados.slice(indexPrimeiroProjeto, indexUltimoProjeto);
+    const totalPaginas = Math.ceil(projetosFiltrados.length / projetosPorPagina);
 
     // Função para mudar de página
     const mudarPagina = (numeroPagina: number) => setPaginaAtual(numeroPagina);
@@ -125,10 +152,39 @@ export default function ProjetosPage() {
                 </div>
             )}
 
+            <input
+                type="text"
+                placeholder="Pesquisar projetos..."
+                value={busca}
+                onChange={(e) => { 
+                    setBusca(e.target.value); 
+                    setPaginaAtual(1); // Resetar para página 1 ao pesquisar
+                }}
+                className="input"
+                style={{
+                    padding: "10px",
+                    width: "60%",
+                    maxWidth: "400px",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc"
+                }}
+            />
+
+            {/* Texto de busca */}  
+            {isSearching && busca !== "" && (
+                <p style={{ textAlign: "center", marginTop: "10px" }}>
+                    Buscando...
+                </p>
+            )}
+
+            {!isSearching && buscaDebounced !== "" && projetosFiltrados.length === 0 && (
+                <p style={{ textAlign: "center", marginTop: "20px" }}>
+                    Nenhum projeto encontrado para "<strong>{buscaDebounced}</strong>".
+                </p>
+            )}
+
             <div className="projects-grid">
-                {projetosAtuais.length === 0 ? (
-                    <p>Nenhum projeto cadastrado ainda.</p>
-                ) : (
+                {projetosAtuais.length > 0 && (
                     projetosAtuais.map(projeto => (
                         <ProjectCard
                             key={projeto.idProjeto}

@@ -94,7 +94,7 @@ export default function EvaluationPage() {
         // Aqui entraria a chamada: await apiClient.post('/avaliar', payload);
         
         alert(`Avaliação registrada com sucesso!\nProjeto: ${projeto?.nomeProjeto}\nMédia: ${media.toFixed(2)}`);
-        navigate('/'); // Volta para a home ou lista de projetos
+        navigate('/projetos'); // Volta para a home ou lista de projetos
     };
 
     if (loading) return <div className="page-container"><h2>Carregando ficha de avaliação...</h2></div>;
