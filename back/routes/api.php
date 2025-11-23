@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthOrientadorController;
 use App\Http\Controllers\ProjetoController;
@@ -14,8 +13,12 @@ Route::post('/login', [AuthOrientadorController::class, 'login']);
 
 // Listar todos os projetos
 Route::get('/projetos', [ProjetoController::class, 'index']);
+
 // Buscar um projeto específico
 Route::get('/projetos/{id}', [ProjetoController::class, 'show']);
+
+// Rota para verificar a senha do avaliador
+Route::post('/projetos/{id}/acesso', [ProjetoController::class, 'verificarAcesso']);
 
 // Rotas Privadas
 Route::middleware('auth:sanctum')->group(function () {

@@ -9,6 +9,7 @@ import EvaluationPage from "./pages/EvaluationPage";
 import { AuthProvider } from "./contexts/auth/AuthProvider";
 import { AdminRoute } from './components/routing/AdminRoute';
 import { ProtectedRoute } from './components/routing/ProtectedRoute';
+import { EvaluatorRoute } from './components/routing/EvaluatorRoute';
 
 import CadastrarProjetoPage from "./pages/CadastrarProjetoPage";
 import CadastrarAlunoPage from "./pages/CadastrarAlunoPage";
@@ -33,9 +34,11 @@ function App() {
               <Route path="/logout" element={<LogoutPage />} />
               <Route path="/projetos" element={<ProjectsPage />} />
               
-              {/* Rotas de Avaliação (Públicas mas com senha) */}
+              {/* Rotas de Avaliação */}
               <Route path="/projetos/:id/acessoavaliador" element={<AccessPage />} />
-              <Route path="/projetos/:id/avaliacao" element={<EvaluationPage />} />
+              <Route element={<EvaluatorRoute />}>
+                <Route path="/projetos/:id/avaliacao" element={<EvaluationPage />} />
+              </Route>
               
               {/* Rotas do Administrador */}
               <Route element={<AdminRoute />}>

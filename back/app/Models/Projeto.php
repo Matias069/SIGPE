@@ -20,6 +20,7 @@ class Projeto extends Model
         'nomeProjeto',
         'descricaoProjeto',
         'bannerProjeto',
+        'senhaAvaliador',
     ];
 
     // Um Projeto pertence a um Orientador

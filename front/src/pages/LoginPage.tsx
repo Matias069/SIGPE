@@ -35,10 +35,9 @@ export default function LoginPage() {
           setErro('Não foi possível obter os dados do usuário.');
       }
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro de Login:', error);
-      const msg = handleApiError(error, 'Falha ao entrar. Verifique suas credenciais.');
-      setErro(msg);
+      setErro(handleApiError(error, 'Email ou senha incorretos.'));
     } finally {
       setIsLoading(false);
     }

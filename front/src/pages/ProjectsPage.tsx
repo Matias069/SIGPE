@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ProjectCard } from '../components/ProjectCard';
 import apiClient from '../apiClient';
+import { handleApiError } from "../utils/errorHandler";
 // @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import "../styles/Pages.css";
 
@@ -15,7 +16,7 @@ type Projeto = {
 export default function ProjetosPage() {
     const [projetos, setProjetos] = useState<Projeto[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [erro, setErro] = useState('');
     
     // Estado para paginação
     const [paginaAtual, setPaginaAtual] = useState(1);
@@ -25,15 +26,13 @@ export default function ProjetosPage() {
     useEffect(() => {
         const fetchProjetos = async () => {
             try {
-                setError('');
+                setErro('');
                 setLoading(true);
-                
                 const response = await apiClient.get('/projetos');
-                
                 setProjetos(response.data);
-            } catch (err) {
-                console.error("Erro ao buscar projetos:", err);
-                setError('Falha ao carregar os projetos.');
+            } catch (error) {
+                console.error("Erro ao buscar projetos", error);
+                setErro(handleApiError(error, "Falha ao carregar os projetos."));
             } finally {
                 setLoading(false);
             }
@@ -107,14 +106,25 @@ export default function ProjetosPage() {
         return <div className="page-container"><h2>Carregando projetos...</h2></div>;
     }
 
-    if (error) {
-        return <div className="page-container"><h2>{error}</h2></div>;
-    }
-
     return (
         <div className="page-container">
             <h1>Projetos</h1>
             
+            {erro && (
+                <div className="error-message" style={{
+                    color: '#721c24', 
+                    backgroundColor: '#f8d7da', 
+                    borderColor: '#f5c6cb', 
+                    padding: '10px', 
+                    marginTop: '10px', 
+                    borderRadius: '5px',
+                    fontSize: '0.9rem',
+                    textAlign: 'center'
+                }}>
+                    {erro}
+                </div>
+            )}
+
             <div className="projects-grid">
                 {projetosAtuais.length === 0 ? (
                     <p>Nenhum projeto cadastrado ainda.</p>
@@ -122,10 +132,7 @@ export default function ProjetosPage() {
                     projetosAtuais.map(projeto => (
                         <ProjectCard
                             key={projeto.idProjeto}
-                            id={projeto.idProjeto}
-                            title={projeto.nomeProjeto}
-                            description={projeto.descricaoProjeto}
-                            imageUrl={projeto.bannerProjeto}
+                            projeto={projeto}
                         />
                     ))
                 )}

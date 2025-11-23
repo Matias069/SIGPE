@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import apiClient from '../apiClient';
+import { handleApiError } from "../utils/errorHandler";
 // @ts-ignore: Importação de CSS
 import '../styles/Pages.css';
 
@@ -7,16 +9,27 @@ export default function AccessPage() {
     const { id } = useParams(); // Pega o ID do projeto da URL
     const [senha, setSenha] = useState('');
     const [erro, setErro] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleAccess = (e: React.FormEvent) => {
+    const handleAccess = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        if (senha === 'senhaacesso') {
-            // Redireciona para a página de avaliação do mesmo projeto
+        setErro('');
+        setLoading(true);
+
+        try {
+            // Envia a senha para validação no backend
+            await apiClient.post(`/projetos/${id}/acesso`, { senha });
+
+            // Se não der erro (200 OK), salva a permissão na sessão
+            sessionStorage.setItem(`access_token_proj_${id}`, 'true');
+
             navigate(`/projetos/${id}/avaliacao`);
-        } else {
-            setErro('Palavra-chave incorreta.');
+        } catch (error) {
+            console.error("Erro ao inserir palavra-chave", error);
+            setErro(handleApiError(error, 'Palavra-chave incorreta. Tente novamente.'));
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -40,13 +53,32 @@ export default function AccessPage() {
                             onChange={(e) => setSenha(e.target.value)}
                             placeholder="Senha de acesso..."
                             style={{ width: '100%' }}
+                            disabled={loading}
                         />
                     </div>
                     
-                    {erro && <p className="error-message">{erro}</p>}
+                    {erro && (
+                        <div className="error-message" style={{
+                            color: '#721c24', 
+                            backgroundColor: '#f8d7da', 
+                            borderColor: '#f5c6cb', 
+                            padding: '10px', 
+                            marginTop: '10px', 
+                            borderRadius: '5px',
+                            fontSize: '0.9rem',
+                            textAlign: 'center'
+                        }}>
+                            {erro}
+                        </div>
+                    )}
                     
-                    <button type="submit" className="acesso-button" style={{ marginTop: '10px' }}>
-                        Acessar Avaliação
+                    <button 
+                        type="submit" 
+                        className="acesso-button" 
+                        style={{ marginTop: '10px' }}
+                        disabled={loading}
+                    >
+                        {loading ? 'Verificando...' : 'Acessar Avaliação'}
                     </button>
                 </form>
             </div>

@@ -35,7 +35,7 @@ export const handleApiError = (error: unknown, defaultMessage: string = 'Ocorreu
 
         // 2. Erro de Autenticação (401)
         if (error.response.status === 401) {
-            return 'Email ou senha incorretos.';
+            return defaultMessage || 'Não autorizado.';
         }
 
         // 3. Erro de Permissão (403)

@@ -14,7 +14,7 @@ export default function LogoutPage() {
     const executarLogout = async () => {
       try {
         await logout();
-      } catch (error: any) {
+      } catch (error) {
         console.error("Erro no logout:", error);
         setErro(handleApiError(error, "Não foi possível encerrar sua sessão."));
       } finally {

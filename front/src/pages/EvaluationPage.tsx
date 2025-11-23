@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../apiClient';
+import { handleApiError } from '../utils/errorHandler';
 // @ts-ignore: Importação de CSS
-import '../styles/Pages.css'; 
+import '../styles/Pages.css';
 
 const criteriosFixos = [
     "Qualidade na escrita e organização",
@@ -34,6 +35,7 @@ export default function EvaluationPage() {
     const navigate = useNavigate();
     const [projeto, setProjeto] = useState<ProjetoDetalhado | null>(null);
     const [loading, setLoading] = useState(true);
+    const [erro, setErro] = useState("");
     
     // Estados do formulário
     const [notas, setNotas] = useState<number[]>(new Array(5).fill(0));
@@ -49,7 +51,7 @@ export default function EvaluationPage() {
                 setProjeto(response.data);
             } catch (error) {
                 console.error("Erro ao carregar projeto", error);
-                alert("Erro ao carregar dados do projeto.");
+                setErro(handleApiError(error, "Erro ao carregar dados do projeto."));
             } finally {
                 setLoading(false);
             }
@@ -120,6 +122,22 @@ export default function EvaluationPage() {
                                 />
                             </div>
                         </div>
+
+                        {erro && (
+                            <div className="error-message" style={{
+                                color: '#721c24', 
+                                backgroundColor: '#f8d7da', 
+                                borderColor: '#f5c6cb', 
+                                padding: '10px', 
+                                marginTop: '10px', 
+                                borderRadius: '5px',
+                                fontSize: '0.9rem',
+                                textAlign: 'center'
+                            }}>
+                                {erro}
+                            </div>
+                        )}
+
                         <div className="header-row">
                             <div className="input-group-underline">
                                 <label className="header-label">Professor Orientador</label>

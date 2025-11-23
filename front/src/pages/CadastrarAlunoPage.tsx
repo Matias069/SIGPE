@@ -48,9 +48,9 @@ export default function CadastrarAlunoPage() {
                     setSearchResults(response.data);
                     setShowDropdown(response.data.length > 0);
                 })
-                .catch(err => {
-                    console.error("Erro ao buscar turmas", err);
-                    setErro(handleApiError(err, "Não foi possível carregar as turmas."));
+                .catch(error => {
+                    console.error("Erro ao buscar turmas", error);
+                    setErro(handleApiError(error, "Não foi possível carregar as turmas."));
                 })
                 .finally(() => setIsLoadingTurmas(false));
         }, 300);

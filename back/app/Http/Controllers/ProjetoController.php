@@ -11,6 +11,46 @@ use Illuminate\Validation\Rule;
 
 class ProjetoController extends Controller
 {
+    private $palavras;
+
+    public function __construct()
+    {
+        $this->palavras = json_decode(file_get_contents(storage_path('palavras.json')), true);
+    }
+    
+    private function gerarSenhaAvaliador() {
+        // Seleciona de 3 a 5 palavras aleatórias
+        $qtd = rand(3, 5);
+        $selecionadas = [];
+        
+        // Garante palavras únicas
+        $indices = array_rand($this->palavras, $qtd);
+        if (!is_array($indices)) $indices = [$indices];
+        
+        foreach($indices as $idx) {
+            $selecionadas[] = $this->palavras[$idx];
+        }
+        
+        return implode(' ', $selecionadas);
+    }
+
+    public function verificarAcesso(Request $request, $id)
+    {
+        $request->validate(['senha' => 'required|string']);
+        
+        $projeto = Projeto::find($id);
+        
+        if (!$projeto) {
+            return response()->json(['message' => 'Projeto não encontrado'], 404);
+        }
+
+        if ($request->senha === $projeto->senhaAvaliador) {
+            return response()->json(['message' => 'Acesso permitido', 'granted' => true]);
+        }
+
+        return response()->json(['message' => 'Senha incorreta'], 401);
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -65,6 +105,9 @@ class ProjetoController extends Controller
 
         $bannerPath = null;
 
+        // Gera a senha em texto plano para retornar ao orientador
+        $senhaPlana = $this->gerarSenhaAvaliador();
+
         // Inicia a transação de BD para garantir atomicidade
         DB::beginTransaction();
         try {
@@ -82,6 +125,7 @@ class ProjetoController extends Controller
                 'descricaoProjeto' => $validatedData['descricaoProjeto'],
                 'idOrientador' => $orientadorId,
                 'bannerProjeto' => $bannerPath,
+                'senhaAvaliador' => $senhaPlana,
             ]);
 
             // Associar os Alunos
@@ -91,8 +135,12 @@ class ProjetoController extends Controller
             // Se tudo correu bem, confirma as alterações
             DB::commit();
 
-            // Retornar o projeto recém-criado e status 201 - Created
-            return response()->json($projeto, 201);
+            // Retorna o projeto e a senha gerada (apenas nesta resposta)
+            $response = $projeto->toArray();
+            $response['senhaGerada'] = $senhaPlana;
+
+            // Status 201 - Created
+            return response()->json($response, 201);
 
         } catch (\Exception $e) {
             // Se algo falhou, desfaz todas as alterações

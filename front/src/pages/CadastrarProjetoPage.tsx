@@ -134,10 +134,7 @@ export default function CadastrarProjetoPage() {
             }
         } catch (error) {
             console.error("Erro ao cadastrar projeto", error);
-
-            // Erro genérico tratado pelo handler
-            const mensagem = handleApiError(error, "Ocorreu um erro ao cadastrar o projeto.");
-            setErro(mensagem);
+            setErro(handleApiError(error, "Ocorreu um erro ao cadastrar o projeto."));
 
             // Tratamento específico para campos individuais (se existirem)
             if (error instanceof Error || !(error as any).response) return;

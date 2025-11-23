@@ -17,19 +17,19 @@ class AlunoSeeder extends Seeder
             // Turma muda a cada 350 alunos
             $idTurma = intdiv($i, 350) + 1;
 
-            if ($i<=3000) {
+            if ($i<3000) {
                 Aluno::create([
                     'matriculaAluno' => '2025'.sprintf("%07d", $i),
                     // Projetos em grupos de 3 alunos
-                    'idProjeto' => intdiv($i, 3),
-                    'idTurma' => $idTurma+1,
+                    'idProjeto' => intdiv($i, 3)+1,
+                    'idTurma' => $idTurma,
                     'nomeAluno' => "Aluno Número ".($i+1),
                 ]);
             } else {
                 Aluno::create([
                     'matriculaAluno' => '2025'.sprintf("%07d", $i),
                     // Alunos sem projeto
-                    'idTurma' => $idTurma+1,
+                    'idTurma' => $idTurma,
                     'nomeAluno' => "Aluno Número ".($i+1),
                 ]);
             }
