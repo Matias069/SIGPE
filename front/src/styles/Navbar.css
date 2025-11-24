@@ -1,22 +1,22 @@
 .navbar {
-  display: flex;
-  justify-content: space-around;
-  background-color: #2d6a4f;
-  padding: 10px;
-  border-radius: 0 0 10px 10px;
+   display: flex;
+   justify-content: space-around;
+   background-color: #2d6a4f;
+   padding: 10px;
+   border-radius: 0 0 10px 10px;
 }
 
 .nav-link {
-  color: white;
-  text-decoration: none;
-  padding: 8px 15px;
-  border-radius: 5px;
+   color: white;
+   text-decoration: none;
+   padding: 8px 15px;
+   border-radius: 5px;
 }
 
 .nav-link:hover {
-  background-color: #1b4332;
+   background-color: #1b4332;
 }
 
 .active {
-  background-color: #081c15;
+   background-color: #081c15;
 }

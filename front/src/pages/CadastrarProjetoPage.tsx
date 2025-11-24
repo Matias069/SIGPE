@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import apiClient from '../apiClient';
 // @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
-import '../styles/Pages.css';
+// import '../styles/Pages.css';
 import { handleApiError } from "../utils/errorHandler";
 
 // Tipo Aluno
@@ -44,12 +44,9 @@ export default function CadastrarProjetoPage() {
         }
 
         setIsLoadingAlunos(true);
-        // Debounce: espera 300ms após o utilizador parar de digitar
         const timer = setTimeout(() => {
-            // Chama a rota correta do backend
-            apiClient.get(`/alunos/disponiveis?search=${alunoSearch}`)
+            apiClient.get(`/alunos/disponiveis?search=${encodeURIComponent(alunoSearch)}`)
                 .then(response => {
-                    // Filtra alunos que já foram selecionados
                     const availableAlunos = response.data.filter(
                         (aluno: Aluno) => !selectedAlunos.find(sa => sa.matriculaAluno === aluno.matriculaAluno)
                     );
@@ -63,7 +60,7 @@ export default function CadastrarProjetoPage() {
                 .finally(() => setIsLoadingAlunos(false));
         }, 300);
 
-        return () => clearTimeout(timer); // Limpa o timer
+        return () => clearTimeout(timer);
     }, [alunoSearch, selectedAlunos]);
 
     // Handlers
@@ -99,7 +96,6 @@ export default function CadastrarProjetoPage() {
         setSucesso('');
         setDescricaoErro('');
 
-        // Validação de mínimo 3 alunos
         if (selectedAlunos.length < 3) {
             setErro('O projeto deve ter no mínimo 3 alunos.');
             return;
@@ -113,7 +109,6 @@ export default function CadastrarProjetoPage() {
             formData.append('bannerProjeto', banner);
         }
 
-        // Enviar as matrículas (PK) dos alunos
         selectedAlunos.forEach((aluno, index) => {
             formData.append(`alunos[${index}]`, aluno.matriculaAluno);
         });
@@ -122,7 +117,6 @@ export default function CadastrarProjetoPage() {
             await apiClient.post('/projetos', formData);
             setSucesso('Projeto cadastrado com sucesso!');
             
-            // Limpa o formulário
             setNomeProjeto('');
             setDescricaoProjeto('');
             setBanner(null);
@@ -136,11 +130,8 @@ export default function CadastrarProjetoPage() {
             console.error("Erro ao cadastrar projeto", error);
             setErro(handleApiError(error, "Ocorreu um erro ao cadastrar o projeto."));
 
-            // Tratamento específico para campos individuais (se existirem)
             if (error instanceof Error || !(error as any).response) return;
-
             const data = (error as any).response.data;
-
             if (data?.errors?.descricaoProjeto) {
                 setDescricaoErro(data.errors.descricaoProjeto[0]);
             }
@@ -148,43 +139,65 @@ export default function CadastrarProjetoPage() {
     };
 
     return (
-        <div className="page-container">
-            <div className="register-project-container">
-                <form className="register-project-form" onSubmit={handleSubmit}>
-                    <h2>Cadastrar Projeto</h2>
+        <div className="min-h-screen bg-gray-50 py-10 px-4 flex justify-center">
+            <div className="w-full max-w-3xl bg-white rounded-lg shadow-md p-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Cadastrar Projeto</h2>
 
-                    <div className="input-group">
-                        <label htmlFor="nomeProjeto">Nome do Projeto</label>
-                        <input type="text" id="nomeProjeto" value={nomeProjeto} onChange={(e) => setNomeProjeto(e.target.value)} required />
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="flex flex-col">
+                        <label htmlFor="nomeProjeto" className="text-sm font-semibold text-gray-700 mb-2">Nome do Projeto</label>
+                        <input
+                            type="text"
+                            id="nomeProjeto"
+                            value={nomeProjeto}
+                            onChange={(e) => setNomeProjeto(e.target.value)}
+                            required
+                            className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none"
+                        />
                     </div>
 
-                    <div className="input-group">
-                        <label htmlFor="descricaoProjeto">Descrição (entre 250 e 500 palavras)</label>
+                    <div className="flex flex-col">
+                        <label htmlFor="descricaoProjeto" className="text-sm font-semibold text-gray-700 mb-2">
+                            Descrição (entre 250 e 500 palavras)
+                        </label>
                         <textarea
-                        id="descricaoProjeto"
-                        value={descricaoProjeto}
-                        onChange={(e) => {
-                            setDescricaoProjeto(e.target.value);
-                            setDescricaoErro('');
-                        }}
-                        required
-                    />
-                    {descricaoErro && <p className="error-message">{descricaoErro}</p>}
+                            id="descricaoProjeto"
+                            value={descricaoProjeto}
+                            onChange={(e) => {
+                                setDescricaoProjeto(e.target.value);
+                                setDescricaoErro('');
+                            }}
+                            required
+                            rows={6}
+                            className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none resize-vertical"
+                        />
+                        {descricaoErro && (
+                            <p className="mt-2 text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2 rounded">
+                                {descricaoErro}
+                            </p>
+                        )}
                     </div>
 
-                    <div className="input-group">
-                        <label htmlFor="bannerProjeto">Banner do Projeto (Opcional)</label>
-                        <input type="file" id="bannerProjeto" accept=".jpeg, .jpg, .png, .pdf, .pptx" onChange={handleBannerChange} ref={fileInputRef} />
+                    <div className="flex flex-col">
+                        <label htmlFor="bannerProjeto" className="text-sm font-semibold text-gray-700 mb-2">Banner do Projeto (Opcional)</label>
+                        <input
+                            type="file"
+                            id="bannerProjeto"
+                            accept=".jpeg, .jpg, .png, .pdf, .pptx"
+                            onChange={handleBannerChange}
+                            ref={fileInputRef}
+                            className="text-sm"
+                        />
                         {banner && (
-                            <div style={{ marginTop: '4px' }}>
-                                <p>Arquivo selecionado: {banner.name}</p>
+                            <div className="mt-2 bg-gray-50 border border-gray-200 rounded p-3 flex items-center justify-between">
+                                <p className="text-sm text-gray-700 truncate">{banner.name}</p>
                                 <button
                                     type="button"
                                     onClick={() => {
                                         setBanner(null);
                                         if (fileInputRef.current) fileInputRef.current.value = '';
                                     }}
-                                    style={{ marginTop: '4px' }}
+                                    className="ml-4 text-sm text-red-600 hover:text-red-800"
                                 >
                                     Remover banner
                                 </button>
@@ -193,9 +206,10 @@ export default function CadastrarProjetoPage() {
                     </div>
 
                     {/* Sistema de Busca de Alunos */}
-                    <div className="input-group">
-                        <label htmlFor="alunoInput">Alunos (3 a 8)</label>
-                        <div className="search-dropdown-container">
+                    <div className="flex flex-col relative">
+                        <label htmlFor="alunoInput" className="text-sm font-semibold text-gray-700 mb-2">Alunos (3 a 8)</label>
+
+                        <div className="relative">
                             <input
                                 type="text"
                                 id="alunoInput"
@@ -203,15 +217,17 @@ export default function CadastrarProjetoPage() {
                                 value={alunoSearch}
                                 onChange={(e) => setAlunoSearch(e.target.value)}
                                 onFocus={() => setShowDropdown(true)}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none"
                             />
-                            {isLoadingAlunos && <p>Buscando...</p>}
-                            
+                            {isLoadingAlunos && <p className="absolute right-2 top-2 text-xs text-gray-500">Buscando...</p>}
+
                             {showDropdown && searchResults.length > 0 && (
-                                <ul className="search-dropdown-list">
+                                <ul className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow max-h-56 overflow-auto">
                                     {searchResults.map(aluno => (
-                                        <li 
-                                            key={aluno.matriculaAluno} 
+                                        <li
+                                            key={aluno.matriculaAluno}
                                             onClick={() => handleSelectAluno(aluno)}
+                                            className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm"
                                         >
                                             {aluno.nomeAluno} ({aluno.matriculaAluno})
                                         </li>
@@ -219,13 +235,20 @@ export default function CadastrarProjetoPage() {
                                 </ul>
                             )}
                         </div>
-                        {alunoErro && <p className="error-message">{alunoErro}</p>}
-                        
-                        <ul className="selected-items-list">
+
+                        {alunoErro && <p className="mt-2 text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2 rounded">{alunoErro}</p>}
+
+                        <ul className="mt-3 space-y-2">
                             {selectedAlunos.map((aluno) => (
-                                <li key={aluno.matriculaAluno}>
-                                    {aluno.nomeAluno} ({aluno.matriculaAluno})
-                                    <button type="button" onClick={() => handleRemoveAluno(aluno)} style={{ marginLeft: '10px' }}>
+                                <li key={aluno.matriculaAluno} className="flex items-center justify-between bg-gray-100 px-3 py-2 rounded">
+                                    <span className="text-sm text-gray-800">
+                                        {aluno.nomeAluno} ({aluno.matriculaAluno})
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveAluno(aluno)}
+                                        className="text-sm text-red-600 hover:text-red-800"
+                                    >
                                         Remover
                                     </button>
                                 </li>
@@ -234,23 +257,25 @@ export default function CadastrarProjetoPage() {
                     </div>
                     
                     {erro && (
-                        <div className="error-message" style={{
-                            color: '#721c24', 
-                            backgroundColor: '#f8d7da', 
-                            borderColor: '#f5c6cb', 
-                            padding: '10px', 
-                            marginTop: '10px', 
-                            borderRadius: '5px',
-                            fontSize: '0.9rem',
-                            textAlign: 'center'
-                        }}>
+                        <div className="text-red-800 bg-red-100 border border-red-300 px-4 py-2 rounded mt-2 text-sm text-center">
                             {erro}
                         </div>
                     )}
 
-                    {sucesso && <p className="success-message">{sucesso}</p>}
+                    {sucesso && (
+                        <p className="text-green-800 bg-green-100 border border-green-300 px-4 py-2 rounded mt-2 text-sm text-center">
+                            {sucesso}
+                        </p>
+                    )}
 
-                    <button type="submit" className="register-button">Cadastrar</button>
+                    <div>
+                        <button
+                            type="submit"
+                            className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-3 rounded-md font-semibold transition"
+                        >
+                            Cadastrar
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

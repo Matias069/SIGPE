@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import apiClient from '../apiClient';
-// @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
-import "../styles/Pages.css";
 import { handleApiError } from "../utils/errorHandler";
 
 export default function CadastrarTurmaPage() {
@@ -22,7 +20,6 @@ export default function CadastrarTurmaPage() {
         setErro('');
         setSucesso('');
 
-        // Converte numeroTurma para Int
         const dataToSend = {
             ...formData,
             numeroTurma: parseInt(formData.numeroTurma, 10),
@@ -31,7 +28,7 @@ export default function CadastrarTurmaPage() {
         try {
             await apiClient.post('/turmas', dataToSend);
             setSucesso('Turma cadastrada com sucesso!');
-            setFormData({ numeroTurma: '', curso: '' }); // Reseta o formulário
+            setFormData({ numeroTurma: '', curso: '' });
         } catch (error) {
             console.error("Erro ao cadastrar turma", error);
             setErro(handleApiError(error, "Ocorreu um erro ao cadastrar a turma."));
@@ -39,19 +36,41 @@ export default function CadastrarTurmaPage() {
     };
 
     return (
-        <div className="page-container">
-            <div className="register-project-container">
-                <form className="register-project-form" onSubmit={handleSubmit}>
-                    <h2>Cadastrar Turma</h2>
+        <div className="min-h-screen w-full flex items-start justify-center bg-gray-100 px-4 pt-16">
+            <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-lg">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     
-                    <div className="input-group">
-                        <label htmlFor="numeroTurma">Número da Turma</label>
-                        <input type="number" id="numeroTurma" name="numeroTurma" value={formData.numeroTurma} onChange={handleChange} required />
+                    <h2 className="text-2xl font-semibold text-gray-800 text-center mb-4">
+                        Cadastrar Turma
+                    </h2>
+                    
+                    <div className="flex flex-col">
+                        <label htmlFor="numeroTurma" className="text-gray-700 font-medium mb-1">
+                            Número da Turma
+                        </label>
+                        <input
+                            type="number"
+                            id="numeroTurma"
+                            name="numeroTurma"
+                            value={formData.numeroTurma}
+                            onChange={handleChange}
+                            required
+                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
                     </div>
 
-                    <div className="input-group">
-                        <label htmlFor="curso">Curso</label>
-                        <select id="curso" name="curso" value={formData.curso} onChange={handleChange} required>
+                    <div className="flex flex-col">
+                        <label htmlFor="curso" className="text-gray-700 font-medium mb-1">
+                            Curso
+                        </label>
+                        <select
+                            id="curso"
+                            name="curso"
+                            value={formData.curso}
+                            onChange={handleChange}
+                            required
+                            className="border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
                             <option value="" disabled>Selecione o curso</option>
                             <option value="Informática">Informática</option>
                             <option value="Agropecuária">Agropecuária</option>
@@ -61,23 +80,24 @@ export default function CadastrarTurmaPage() {
                     </div>
 
                     {erro && (
-                        <div className="error-message" style={{
-                            color: '#721c24', 
-                            backgroundColor: '#f8d7da', 
-                            borderColor: '#f5c6cb', 
-                            padding: '10px', 
-                            marginTop: '10px', 
-                            borderRadius: '5px',
-                            fontSize: '0.9rem',
-                            textAlign: 'center'
-                        }}>
+                        <div className="text-red-700 bg-red-100 border border-red-300 px-3 py-2 rounded-lg text-sm text-center">
                             {erro}
                         </div>
                     )}
 
-                    {sucesso && <p className="success-message">{sucesso}</p>}
+                    {sucesso && (
+                        <p className="text-green-700 bg-green-100 border border-green-300 px-3 py-2 rounded-lg text-sm text-center">
+                            {sucesso}
+                        </p>
+                    )}
 
-                    <button type="submit" className="register-button">Cadastrar</button>
+                    <button
+                        type="submit"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg transition"
+                    >
+                        Cadastrar
+                    </button>
+
                 </form>
             </div>
         </div>

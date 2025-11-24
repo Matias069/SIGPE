@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import apiClient from '../apiClient';
-// @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
-import '../styles/Pages.css';
 import { handleApiError } from "../utils/errorHandler";
 
 export default function CadastrarOrientadorPage() {
@@ -41,49 +39,83 @@ export default function CadastrarOrientadorPage() {
     };
 
     return (
-        <div className="page-container">
-            <div className="register-project-container">
-                <form className="register-project-form" onSubmit={handleSubmit}>
-                    <h2>Cadastrar Orientador</h2>
+        <div className="min-h-screen bg-gray-100 flex items-start justify-center p-6">
+            <div className="w-full max-w-lg bg-white p-8 rounded-2xl shadow-lg mt-10">
+                <form className="space-y-5" onSubmit={handleSubmit}>
+                    <h2 className="text-2xl font-semibold text-center mb-2">Cadastrar Orientador</h2>
                     
-                    <div className="input-group">
-                        <label htmlFor="nomeOrientador">Nome do Orientador</label>
-                        <input type="text" id="nomeOrientador" name="nomeOrientador" value={formData.nomeOrientador} onChange={handleChange} required />
+                    <div className="flex flex-col space-y-1">
+                        <label htmlFor="nomeOrientador" className="font-medium">Nome do Orientador</label>
+                        <input 
+                            type="text"
+                            id="nomeOrientador"
+                            name="nomeOrientador"
+                            value={formData.nomeOrientador}
+                            onChange={handleChange}
+                            required
+                            className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        />
                     </div>
 
-                    <div className="input-group">
-                        <label htmlFor="emailOrientador">Email</label>
-                        <input type="email" id="emailOrientador" name="emailOrientador" value={formData.emailOrientador} onChange={handleChange} required />
+                    <div className="flex flex-col space-y-1">
+                        <label htmlFor="emailOrientador" className="font-medium">Email</label>
+                        <input 
+                            type="email"
+                            id="emailOrientador"
+                            name="emailOrientador"
+                            value={formData.emailOrientador}
+                            onChange={handleChange}
+                            required
+                            className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        />
                     </div>
 
-                    <div className="input-group">
-                        <label htmlFor="senhaOrientador">Senha (mín. 8 caracteres)</label>
-                        <input type="password" id="senhaOrientador" name="senhaOrientador" value={formData.senhaOrientador} onChange={handleChange} minLength={8} required />
+                    <div className="flex flex-col space-y-1">
+                        <label htmlFor="senhaOrientador" className="font-medium">Senha (mín. 8 caracteres)</label>
+                        <input 
+                            type="password"
+                            id="senhaOrientador"
+                            name="senhaOrientador"
+                            value={formData.senhaOrientador}
+                            onChange={handleChange}
+                            minLength={8}
+                            required
+                            className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        />
                     </div>
 
-                    <div className="input-group-checkbox">
-                        <input type="checkbox" id="isAdmin" name="isAdmin" checked={formData.isAdmin} onChange={handleChange} />
-                        <label htmlFor="isAdmin">Este orientador é um Administrador?</label>
+                    <div className="flex items-center space-x-2">
+                        <input 
+                            type="checkbox"
+                            id="isAdmin"
+                            name="isAdmin"
+                            checked={formData.isAdmin}
+                            onChange={handleChange}
+                            className="w-4 h-4"
+                        />
+                        <label htmlFor="isAdmin" className="font-medium">
+                            Este orientador é um Administrador?
+                        </label>
                     </div>
 
                     {erro && (
-                        <div className="error-message" style={{
-                            color: '#721c24', 
-                            backgroundColor: '#f8d7da', 
-                            borderColor: '#f5c6cb', 
-                            padding: '10px', 
-                            marginTop: '10px', 
-                            borderRadius: '5px',
-                            fontSize: '0.9rem',
-                            textAlign: 'center'
-                        }}>
+                        <div className="text-red-700 bg-red-100 border border-red-300 p-3 rounded-md text-center text-sm">
                             {erro}
                         </div>
                     )}
 
-                    {sucesso && <p className="success-message">{sucesso}</p>}
+                    {sucesso && (
+                        <p className="text-green-700 bg-green-100 border border-green-300 p-3 rounded-md text-center text-sm">
+                            {sucesso}
+                        </p>
+                    )}
 
-                    <button type="submit" className="register-button">Cadastrar</button>
+                    <button 
+                        type="submit"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition-all"
+                    >
+                        Cadastrar
+                    </button>
                 </form>
             </div>
         </div>

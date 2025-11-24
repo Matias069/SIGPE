@@ -1,5 +1,3 @@
-// @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
-import "../styles/Pages.css";
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/auth/useAuth';
@@ -20,21 +18,17 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Chama o login do contexto
       const orientador = await login(email, senha);
-      
-      // Redirecionamento baseado na role com verificação de segurança
-      if (orientador) {
-          if (orientador.isAdmin) {
-            navigate('/'); 
-          } else {
-            navigate('/cadastrarprojeto');
-          }
-      } else {
-          // Se login não jogou erro mas também não retornou user
-          setErro('Não foi possível obter os dados do usuário.');
-      }
 
+      if (orientador) {
+        if (orientador.isAdmin) {
+          navigate('/');
+        } else {
+          navigate('/cadastrarprojeto');
+        }
+      } else {
+        setErro('Não foi possível obter os dados do usuário.');
+      }
     } catch (error) {
       console.error('Erro de Login:', error);
       setErro(handleApiError(error, 'Email ou senha incorretos.'));
@@ -44,18 +38,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="page-container">
-      <div className="login-container-login">
-        <form className="login-form" onSubmit={handleLogin}>
-          
-          <h2>Entrar</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-5">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
+        <form className="w-full" onSubmit={handleLogin}>
+          <h2 className="text-center mb-6 text-2xl font-bold text-gray-800">Entrar</h2>
 
-          <div className="input-group">
-            <label htmlFor="email">Email</label>
+          <div className="flex flex-col mb-4">
+            <label htmlFor="email" className="mb-2 font-semibold text-gray-700">Email</label>
             <input
               type="email"
               id="email"
-              className="input-field"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
               placeholder="seuemail@exemplo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -64,12 +57,12 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="input-group">
-            <label htmlFor="password">Senha</label>
+          <div className="flex flex-col mb-4">
+            <label htmlFor="password" className="mb-2 font-semibold text-gray-700">Senha</label>
             <input
               type="password"
               id="password"
-              className="input-field"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
               placeholder="Sua senha"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
@@ -79,21 +72,20 @@ export default function LoginPage() {
           </div>
 
           {erro && (
-            <div className="error-message" style={{
-                color: '#721c24', 
-                backgroundColor: '#f8d7da', 
-                borderColor: '#f5c6cb', 
-                padding: '10px', 
-                marginTop: '10px', 
-                borderRadius: '5px',
-                fontSize: '0.9rem',
-                textAlign: 'center'
-            }}>
-                {erro}
+            <div
+              className="text-red-800 bg-red-100 border border-red-200 p-3 mt-2 rounded text-sm text-center"
+              role="alert"
+            >
+              {erro}
             </div>
           )}
 
-          <button type="submit" className="login-button" disabled={isLoading}>
+          <button
+            type="submit"
+            className={`w-full py-3 mt-4 rounded-lg font-semibold text-white transition
+              ${isLoading ? 'bg-green-500 opacity-60 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+            disabled={isLoading}
+          >
             {isLoading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>

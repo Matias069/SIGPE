@@ -1,57 +1,47 @@
-import { Link, useLocation } from "react-router-dom";
-import { useAuth } from '../contexts/auth/useAuth';
-// @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Navbar.css'.
-import "../styles/Navbar.css";
+import { Settings, LogOut } from "lucide-react";
+import { useAuth } from "../contexts/auth/useAuth";
 
-export default function Navbar() 
-{
-  const { orientador } = useAuth();
-  const isAuthenticated = !!orientador;
-  // Verifica se é admin (garante false se user for null)
-  const isAdmin = orientador?.isAdmin || false;
-  
-  const location = useLocation();
-  const navItems = [
-    { name: "Página Inicial", path: "/" },
-    { name: "Projetos", path: "/projetos" },
-  ];
-  if (isAuthenticated && isAdmin){
-    navItems.push(
-      { name: "Cadastrar Aluno", path: "/cadastraraluno" },
-      { name: "Cadastrar Avaliador", path: "/cadastraravaliador" },
-      { name: "Cadastrar Orientador", path: "/cadastrarorientador" },
-      { name: "Cadastrar Turma", path: "/cadastrarturma" },
-    );
-  }
-  if (isAuthenticated){
-    navItems.push(
-      { name: "Cadastrar Projeto", path: "/cadastrarprojeto" },
-    );
-  }
-  if (!isAuthenticated){
-    navItems.push(
-      { name: "Entrar", path: "/login" },
-    );
-  } else {
-    navItems.push(
-      { name: "Sair", path: "/logout" },
-    );
-  }
+const Navbar = () => {
+   const { orientador, logout } = useAuth();
 
-  return (
-    <nav className="navbar">
-      <div className="navbar-logo">
-        <h2 style={{color: '#000000'}}>SIGPE</h2>
+   return (
+      <div className="navbar bg-base-100 shadow-sm px-4">
+         {/* Botão SIGPE → abre o sidebar */}
+         <label
+            htmlFor="my-drawer-1"
+            className="btn btn-ghost text-xl drawer-button"
+         >
+            SIGPE
+         </label>
+
+         {/* Espaçador */}
+         <div className="flex-1"></div>
+
+         {/* Botão Settings → dropdown */}
+         {orientador && (
+            <div className="dropdown dropdown-end">
+               <button tabIndex={0} className="btn btn-ghost">
+                  <Settings className="w-5 h-5" />
+               </button>
+
+               <ul
+                  tabIndex={-1}
+                  className="dropdown-content menu bg-emerald-100 rounded-box w-52 p-2 shadow-md z-50"
+               >
+                  <li>
+                     <button
+                        className="flex items-center gap-2"
+                        onClick={logout} // chama função de logout
+                     >
+                        <LogOut className="w-4 h-4" />
+                        Sair
+                     </button>
+                  </li>
+               </ul>
+            </div>
+         )}
       </div>
-      {navItems.map((item) => (
-        <Link
-          key={item.path}
-          to={item.path}
-          className={`nav-link ${location.pathname === item.path ? "active" : ""}`}
-        >
-          {item.name}
-        </Link>
-      ))}
-    </nav>
-  );
-}
+   );
+};
+
+export default Navbar;
