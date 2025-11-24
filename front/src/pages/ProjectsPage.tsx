@@ -7,10 +7,13 @@ import "../styles/Pages.css";
 
 type Projeto = {
     idProjeto: number;
-    idOrientador: number;
     nomeProjeto: string;
     descricaoProjeto: string;
     bannerProjeto: string | null;
+    senhaAvaliador: string;
+    orientador: {
+        nomeOrientador: string;
+    }
 };
 
 export default function ProjetosPage() {

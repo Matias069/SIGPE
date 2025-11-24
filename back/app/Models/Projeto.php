@@ -36,8 +36,8 @@ class Projeto extends Model
     }
 
     // Relacionamento N-para-N com Avaliador (tabela avaliar)
-    public function avaliadores(): BelongsToMany
+    public function avaliacoes()
     {
-        return $this->belongsToMany(Avaliador::class, 'avaliar', 'idProjeto', 'matriculaSiape')->withPivot('nomeTrabalho', 'nomeAvaliador', 'criteriosDeAvaliacao', 'anotacoes');
+        return $this->hasMany(Avaliar::class, 'idProjeto', 'idProjeto');
     }
 }

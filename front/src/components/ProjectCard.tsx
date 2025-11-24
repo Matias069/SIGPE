@@ -12,10 +12,12 @@ interface Projeto {
     nomeProjeto: string;
     descricaoProjeto: string;
     bannerProjeto: string | null;
-    senhaAvaliador?: string;
-    orientador?: {
+    senhaAvaliador: string;
+    orientador: {
         nomeOrientador: string;
     };
+    status_avaliacao?: 'pendente' | 'em_andamento' | 'concluido';
+    nota_final?: string | null;
 }
 
 // Definir a interface para as props que o Card vai receber
@@ -26,7 +28,7 @@ interface ProjectCardProps {
 export function ProjectCard({ projeto }: ProjectCardProps) {
     const navigate = useNavigate();
     const { orientador } = useAuth(); // Obtém o usuário logado
-    const isAdmin = orientador ? orientador.isAdmin : false;
+    const isAdmin = orientador?.isAdmin;
 
     // Definir a URL base do seu backend para construir o link da imagem
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -53,12 +55,57 @@ export function ProjectCard({ projeto }: ProjectCardProps) {
         return str.length > num ? str.substring(0, num) + "..." : str;
     };
 
+    const handleCardClick = () => {
+        // O backend bloqueará a 3ª avaliação
+        navigate(`/projetos/${projeto.idProjeto}/acessoavaliador`);
+    };
+
+    // Lógica de exibição do status e nota
+    let statusBadge;
+    if (projeto.status_avaliacao === 'concluido') {
+        statusBadge = (
+            <div style={{ 
+                marginTop: '10px', padding: '5px 10px', borderRadius: '15px', 
+                backgroundColor: '#2d6a4f', color: '#fff', fontWeight: 'bold', 
+                textAlign: 'center', fontSize: '0.9rem' 
+            }}>
+                Nota: {projeto.nota_final}
+            </div>
+        );
+    } else if (projeto.status_avaliacao === 'em_andamento') {
+        statusBadge = (
+            <div style={{ 
+                marginTop: '10px', padding: '5px 10px', borderRadius: '15px', 
+                backgroundColor: '#f4a261', color: '#fff', fontWeight: 'bold', 
+                textAlign: 'center', fontSize: '0.9rem' 
+            }}>
+                Avaliação em andamento...
+            </div>
+        );
+    } else {
+        statusBadge = (
+            <div style={{ 
+                marginTop: '10px', padding: '5px 10px', borderRadius: '15px', 
+                backgroundColor: '#e0e0e0', color: '#666', fontWeight: 'bold', 
+                textAlign: 'center', fontSize: '0.9rem' 
+            }}>
+                Nota pendente
+            </div>
+        );
+    }
+
     return (
         <div className="project-card">
-            <img src={finalImageUrl} alt={`Banner de ${projeto.nomeProjeto}`} />
+            <img src={finalImageUrl} alt={`Banner de ${projeto.nomeProjeto}`} style={{borderRadius: '4px'}} />
             <div className="card-content">
                 <h3 className="card-titulo">{projeto.nomeProjeto}</h3>
+                <p style={{ margin: '0', color: '#555', fontSize: '1rem' }}>
+                    <strong>Orientador:</strong> {projeto.orientador?.nomeOrientador}
+                </p>
                 <p className="card-resumo">{truncate(projeto.descricaoProjeto, 100)}</p>
+
+                {/* Exibe o status ou nota */}
+                {statusBadge}
 
                 {isAdmin && projeto.senhaAvaliador && (
                     <p className="card-senha">
@@ -70,7 +117,7 @@ export function ProjectCard({ projeto }: ProjectCardProps) {
                 <button 
                     type="button" 
                     className="detail-button" 
-                    onClick={() => navigate(`/projetos/${projeto.idProjeto}/acessoavaliador`)}
+                    onClick={handleCardClick}
                     style={{textDecoration: 'none', marginTop: 'auto'}}
                 >
                     Avaliar Projeto

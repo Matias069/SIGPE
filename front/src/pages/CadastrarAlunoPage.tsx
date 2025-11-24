@@ -42,7 +42,7 @@ export default function CadastrarAlunoPage() {
         setIsLoadingTurmas(true);
         // Debounce: espera 300ms após o utilizador parar de digitar
         const timer = setTimeout(() => {
-            // Chama a rota correta do backend
+            // Chama a rota do backend
             apiClient.get(`/turmas?search=${turmaSearch}`)
                 .then(response => {
                     setSearchResults(response.data);

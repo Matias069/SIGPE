@@ -11,6 +11,9 @@ use App\Http\Controllers\AvaliadorController;
 // Login
 Route::post('/login', [AuthOrientadorController::class, 'login']);
 
+// Listar avaliadores
+Route::get('/avaliadores', [AvaliadorController::class, 'index']);
+
 // Listar todos os projetos
 Route::get('/projetos', [ProjetoController::class, 'index']);
 
@@ -19,6 +22,9 @@ Route::get('/projetos/{id}', [ProjetoController::class, 'show']);
 
 // Rota para verificar a senha do avaliador
 Route::post('/projetos/{id}/acesso', [ProjetoController::class, 'verificarAcesso']);
+
+// Rota para salvar avaliação
+Route::post('/projetos/{id}/avaliar', [ProjetoController::class, 'storeAvaliacao']);
 
 // Rotas Privadas
 Route::middleware('auth:sanctum')->group(function () {

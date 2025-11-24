@@ -30,25 +30,39 @@ type ProjetoDetalhado = {
     alunos: Aluno[];
 };
 
+type Avaliador = {
+    matriculaSiape: string;
+    nomeAvaliador: string;
+};
+
 export default function EvaluationPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [projeto, setProjeto] = useState<ProjetoDetalhado | null>(null);
+    const [avaliadores, setAvaliadores] = useState<Avaliador[]>([]);
     const [loading, setLoading] = useState(true);
     const [erro, setErro] = useState("");
+    const [sucesso, setSucesso] = useState("");
     
     // Estados do formulário
+    const [selectedAvaliador, setSelectedAvaliador] = useState('');
     const [notas, setNotas] = useState<number[]>(new Array(5).fill(0));
-    // Armazena as matrículas dos alunos que faltaram
-    const [faltas, setFaltas] = useState<Set<string>>(new Set());
+    const [faltas, setFaltas] = useState<Set<string>>(new Set()); // Armazena as matrículas dos alunos que faltaram
     const [observacoes, setObservacoes] = useState('');
+    const [enviando, setEnviando] = useState(false);
 
     useEffect(() => {
-        const fetchProjeto = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
-                const response = await apiClient.get(`/projetos/${id}`);
-                setProjeto(response.data);
+
+                // Carrega projeto
+                const projResponse = await apiClient.get(`/projetos/${id}`);
+                setProjeto(projResponse.data);
+
+                // Carrega lista de avaliadores para o dropdown
+                const avResponse = await apiClient.get('/avaliadores');
+                setAvaliadores(avResponse.data);
             } catch (error) {
                 console.error("Erro ao carregar projeto", error);
                 setErro(handleApiError(error, "Erro ao carregar dados do projeto."));
@@ -57,7 +71,7 @@ export default function EvaluationPage() {
             }
         };
 
-        if (id) fetchProjeto();
+        if (id) fetchData();
     }, [id]);
 
     const handleNotaChange = (index: number, novaNota: string) => {
@@ -78,23 +92,41 @@ export default function EvaluationPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const media = notas.reduce((a, b) => a + b, 0) / notas.length;
-        
-        // Estrutura do payload para envio futuro ao backend
-        const payload = {
-            idProjeto: projeto?.idProjeto,
-            notas: notas, // Array com as 5 notas
-            mediaFinal: parseFloat(media.toFixed(2)),
-            alunosFaltantes: Array.from(faltas), // Lista de matrículas
-            observacoes: observacoes
-        };
+        setErro("");
+        setSucesso("");
 
-        console.log("--- Enviando Avaliação ---", payload);
-        
-        // Aqui entraria a chamada: await apiClient.post('/avaliar', payload);
-        
-        alert(`Avaliação registrada com sucesso!\nProjeto: ${projeto?.nomeProjeto}\nMédia: ${media.toFixed(2)}`);
-        navigate('/projetos'); // Volta para a home ou lista de projetos
+        if (!selectedAvaliador) {
+            setErro("Por favor, selecione um avaliador.");
+            return;
+        }
+
+        try {
+            setEnviando(true);
+            // const media = notas.reduce((a, b) => a + b, 0) / notas.length;
+            const payload = {
+                matriculaSiape: selectedAvaliador,
+                notas: notas,
+                alunosFaltantes: Array.from(faltas),
+                observacoes: observacoes
+            };
+
+            await apiClient.post(`/projetos/${id}/avaliar`, payload);
+            setSucesso("Avaliação registrada com sucesso!");
+
+            // Reset dos campos
+            setSelectedAvaliador("");
+            setNotas(new Array(5).fill(0));
+            setFaltas(new Set());
+            setObservacoes("");
+
+            // Navega para os projetos após avaliar
+            navigate('/projetos');
+        } catch (error) {
+            console.error("Erro ao enviar avaliação", error);
+            setErro(handleApiError(error, "Erro ao registrar a avaliação."));
+        } finally {
+            setEnviando(false);
+        }
     };
 
     if (loading) return <div className="page-container"><h2>Carregando ficha de avaliação...</h2></div>;
@@ -108,6 +140,27 @@ export default function EvaluationPage() {
 
                 <form onSubmit={handleSubmit}>
                     
+                    {/* Seleção do Avaliador */}
+                    <div className="evaluation-header" style={{marginBottom: '20px'}}>
+                        <div className="header-row">
+                            <label className="header-label" style={{marginBottom: '5px', display: 'block'}}>Selecione o Avaliador:</label>
+                            <select
+                                className="input-underline"
+                                value={selectedAvaliador}
+                                onChange={(e) => setSelectedAvaliador(e.target.value)}
+                                style={{ width: '100%', padding: '10px', fontSize: '1rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                                required
+                            >
+                                <option value="">Selecione</option>
+                                {avaliadores.map(av => (
+                                    <option key={av.matriculaSiape} value={av.matriculaSiape}>
+                                        {av.nomeAvaliador}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
                     {/* Cabeçalho */}
                     <div className="evaluation-header">
                         <div className="header-row">
@@ -117,6 +170,19 @@ export default function EvaluationPage() {
                                     type="text" 
                                     className="input-underline read-only-field"
                                     value={projeto.nomeProjeto}
+                                    readOnly
+                                    style={{ fontWeight: 'bold', color: '#333' }}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="header-row">
+                            <div className="input-group-underline">
+                                <label className="header-label">Professor Orientador</label>
+                                <input 
+                                    type="text" 
+                                    className="input-underline read-only-field"
+                                    value={projeto.orientador.nomeOrientador}
                                     readOnly
                                     style={{ fontWeight: 'bold', color: '#333' }}
                                 />
@@ -137,19 +203,6 @@ export default function EvaluationPage() {
                                 {erro}
                             </div>
                         )}
-
-                        <div className="header-row">
-                            <div className="input-group-underline">
-                                <label className="header-label">Professor Orientador</label>
-                                <input 
-                                    type="text" 
-                                    className="input-underline read-only-field"
-                                    value={projeto.orientador.nomeOrientador}
-                                    readOnly
-                                    style={{ fontWeight: 'bold', color: '#333' }}
-                                />
-                            </div>
-                        </div>
                     </div>
 
                     {/* Critérios com Sliders */}
@@ -172,17 +225,7 @@ export default function EvaluationPage() {
                                     />
                                 </div>
                                 <div className="slider-scale">
-                                    <span>0</span>
-                                    <span>1</span>
-                                    <span>2</span>
-                                    <span>3</span>
-                                    <span>4</span>
-                                    <span>5</span>
-                                    <span>6</span>
-                                    <span>7</span>
-                                    <span>8</span>
-                                    <span>9</span>
-                                    <span>10</span>
+                                    {[...Array(11)].map((_, i) => <span key={i}>{i}</span>)}
                                 </div>
                             </div>
                         ))}
@@ -214,7 +257,7 @@ export default function EvaluationPage() {
                         )}
                     </div>
 
-                    {/* Rodapé e Botões */}
+                    {/* Observações e Botões */}
                     <div className="evaluation-footer">
                         <div className="comments-section">
                             <label style={{ fontWeight: 'bold', color: '#2d6a4f' }}>
@@ -222,7 +265,7 @@ export default function EvaluationPage() {
                             </label>
                             <textarea
                                 rows={4}
-                                placeholder="Digite suas considerações aqui..."
+                                placeholder="Digite suas considerações..."
                                 value={observacoes}
                                 onChange={(e) => setObservacoes(e.target.value)}
                             ></textarea>
@@ -236,12 +279,14 @@ export default function EvaluationPage() {
                             >
                                 Cancelar
                             </button>
-                            <button type="submit" className="btn-submit">
-                                Enviar Avaliação
+
+                            {sucesso && <p className="success-message">{sucesso}</p>}
+
+                            <button type="submit" className="btn-submit" disabled={enviando}>
+                                {enviando ? 'Enviando...' : 'Enviar Avaliação'}
                             </button>
                         </div>
                     </div>
-
                 </form>
             </div>
         </div>

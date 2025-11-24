@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Projeto;
 use App\Models\Aluno;
+use App\Models\Avaliar;
+use App\Models\Examinar;
+use App\Models\Avaliador;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -56,8 +59,120 @@ class ProjetoController extends Controller
      */
     public function index()
     {
-        // Carrega o orientador junto para listagens otimizadas
-        return Projeto::with('orientador')->get();
+        // Carrega o orientador junto para listagens otimizadas e com avaliações para calcular status
+        $projetos = Projeto::with(['orientador', 'avaliacoes'])->get();
+
+        // Processa cada projeto para adicionar campos calculados virtuais
+        $projetos->each(function ($projeto) {
+            $qtdAvaliacoes = $projeto->avaliacoes->count();
+            
+            if ($qtdAvaliacoes === 0) {
+                $projeto->status_avaliacao = 'pendente';
+                $projeto->nota_final = null;
+            } elseif ($qtdAvaliacoes === 1) {
+                $projeto->status_avaliacao = 'em_andamento';
+                $projeto->nota_final = null;
+            } else {
+                $projeto->status_avaliacao = 'concluido';
+                // Calcula média das médias
+                $somaMedias = 0;
+                foreach ($projeto->avaliacoes as $avaliacao) {
+                    // $avaliacao->criteriosDeAvaliacao é um array [n1, n2, n3, n4, n5]
+                    // Se já vier castado pelo Model, é array, se não, json_decode
+                    $notas = is_string($avaliacao->criteriosDeAvaliacao) 
+                        ? json_decode($avaliacao->criteriosDeAvaliacao, true) 
+                        : $avaliacao->criteriosDeAvaliacao;
+                    
+                    if (is_array($notas) && count($notas) > 0) {
+                        $mediaAvaliacao = array_sum($notas) / count($notas);
+                        $somaMedias += $mediaAvaliacao;
+                    }
+                }
+                // Média final = (Média Av1 + Média Av2) / 2
+                $projeto->nota_final = number_format($somaMedias / 2, 2); // 2 avaliações
+            }
+        });
+
+        return $projetos;
+    }
+
+    public function storeAvaliacao(Request $request, $id)
+    {
+        $projeto = Projeto::find($id);
+        if (!$projeto) {
+            return response()->json(['message' => 'Projeto não encontrado'], 404);
+        }
+
+        // Verifica limite de 2 avaliações (trava as linhas desse projeto enquanto conta para evitar uma race condition)
+        $avaliacoes = Avaliar::where('idProjeto', $id)
+            ->lockForUpdate()
+            ->get();
+        $count = $avaliacoes->count();
+
+        if ($count >= 2) {
+            return response()->json(['message' => 'Limite de avaliações excedido para este projeto.'], 400);
+        }
+
+        $validated = $request->validate([
+            'matriculaSiape' => 'required|string|exists:avaliador,matriculaSiape',
+            'notas' => 'required|array|size:5',
+            'notas.*' => 'numeric|min:0|max:10',
+            'alunosFaltantes' => 'array',
+            'observacoes' => 'nullable|string|max:500'
+        ]);
+
+        // Verifica se este avaliador já avaliou este projeto
+        $jaAvaliou = Avaliar::where('idProjeto', $id)
+                            ->where('matriculaSiape', $validated['matriculaSiape'])
+                            ->exists();
+        if ($jaAvaliou) {
+            return response()->json(['message' => 'Este avaliador já registrou uma avaliação para este projeto.'], 400);
+        }
+
+        // Inicia a transação de BD para garantir atomicidade
+        DB::beginTransaction();
+        try {
+            $avaliador = Avaliador::where('matriculaSiape', $validated['matriculaSiape'])->first();
+
+            // Calcular média desta avaliação
+            $media = array_sum($validated['notas']) / count($validated['notas']);
+
+            // Transformar a média em número inteiro de 0 a 100
+            $mediaMultiplicada = intval($media * 10);
+
+            // Salvar na tabela Avaliar
+            Avaliar::create([
+                'idProjeto' => $id,
+                'matriculaSiape' => $validated['matriculaSiape'],
+                'nomeTrabalho' => $projeto->nomeProjeto,
+                'nomeAvaliador' => $avaliador->nomeAvaliador,
+                'criteriosDeAvaliacao' => $validated['notas'], // O cast do Model converte para JSON
+                'anotacoes' => $validated['observacoes'] ?? ''
+            ]);
+
+            // Salvar na tabela Examinar (Nota Individual dos Alunos)
+            // Busca todos os alunos do projeto
+            $alunos = Aluno::where('idProjeto', $id)->get();
+            $faltantes = collect($validated['alunosFaltantes'] ?? []);
+
+            foreach ($alunos as $aluno) {
+                // Se o aluno está na lista de faltantes, nota 0, se não, nota da avaliação
+                $notaAluno = $faltantes->contains($aluno->matriculaAluno) ? 0 : $mediaMultiplicada;
+
+                Examinar::create([
+                    'matriculaSiape' => $validated['matriculaSiape'],
+                    'matriculaAluno' => $aluno->matriculaAluno,
+                    'notaAluno' => $notaAluno
+                ]);
+            }
+
+            DB::commit();
+            return response()->json(['message' => 'Avaliação registrada com sucesso!'], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Erro ao salvar avaliação', 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**

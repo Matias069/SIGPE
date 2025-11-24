@@ -160,7 +160,7 @@
 
 /* Título do projeto */
 .card-titulo {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   color: #004aad;
   margin-bottom: 10px;
 }
@@ -173,7 +173,7 @@
 /* Resumo do projeto */
 .card-resumo {
   color: #333;
-  font-size: 0.95rem;
+  font-size: 1rem;
   margin-top: 10px;
   line-height: 1.4;
   max-height: 120px; /* limita altura para não estourar o card */
@@ -946,7 +946,6 @@
     border: none;
     border-radius: 6px;
     font-weight: bold;
-    text-transform: uppercase;
     cursor: pointer;
     transition: background 0.3s;
 }

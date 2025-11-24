@@ -30,6 +30,6 @@ class Avaliador extends Model
     // Relacionamento N-para-N com Aluno (tabela examinar)
     public function alunosExaminados(): BelongsToMany
     {
-        return $this->belongsToMany(Aluno::class, 'examinar', 'matriculaSiape', 'matriculaAluno')->withPivot('nota');
+        return $this->belongsToMany(Aluno::class, 'examinar', 'matriculaSiape', 'matriculaAluno')->withPivot('notaAluno');
     }
 }
