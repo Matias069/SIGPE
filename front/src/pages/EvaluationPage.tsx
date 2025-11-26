@@ -573,6 +573,7 @@ export default function EvaluationPage() {
                                                 e.target.value
                                              )
                                           }
+                                          className="w-full h-2 rounded-md bg-[#d3d3d3] outline-none appearance-none transition-colors duration-200 accent-green-600"
                                           style={{ width: "100%" }}
                                        />
                                        <div
