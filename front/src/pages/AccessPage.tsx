@@ -12,6 +12,7 @@ export default function AccessPage() {
    const [erro, setErro] = useState("");
    const [loading, setLoading] = useState(false);
    const [nomeProjeto, setNomeProjeto] = useState(""); // Estado para o nome do arquivo
+   const [bloqueado, setBloqueado] = useState(false); // Novo estado para travar a interface
    const navigate = useNavigate();
 
    // A URL que o QR Code representará (a página atual de acesso)
@@ -44,11 +45,24 @@ export default function AccessPage() {
          sessionStorage.setItem(`access_token_proj_${id}`, "true");
 
          navigate(`/projetos/${id}/avaliacao`);
-      } catch (error) {
-         console.error("Erro ao inserir palavra-chave", error);
-         setErro(
-            handleApiError(error, "Palavra-chave incorreta. Tente novamente.")
-         );
+      } catch (error: any) {
+         console.error("Erro ao validar acesso", error);
+
+         // Verifica especificamente o status 403 (Limite Atingido)
+         if (error.response && error.response.status === 403) {
+            const msg =
+               error.response.data.message ||
+               "Este projeto já atingiu o limite máximo de avaliações.";
+            setErro(msg);
+            setBloqueado(true); // Bloqueia o input e botão
+         } else {
+            setErro(
+               handleApiError(
+                  error,
+                  "Palavra-chave incorreta. Tente novamente."
+               )
+            );
+         }
       } finally {
          setLoading(false);
       }
@@ -82,9 +96,13 @@ export default function AccessPage() {
             }
          };
          // Converte SVG para base64 para desenhar no canvas
-         img.src =
-            "data:image/svg+xml;base64," +
-            btoa(unescape(encodeURIComponent(svgData)));
+         const base64 = btoa(
+            new TextEncoder()
+               .encode(svgData)
+               .reduce((s, b) => s + String.fromCharCode(b), "")
+         );
+
+         img.src = "data:image/svg+xml;base64," + base64;
       }
    };
 
@@ -186,9 +204,11 @@ export default function AccessPage() {
                      className="input"
                      value={senha}
                      onChange={(e) => setSenha(e.target.value)}
-                     placeholder="Senha de acesso..."
+                     placeholder={
+                        bloqueado ? "Acesso bloqueado" : "Senha de acesso..."
+                     }
                      style={{ width: "100%" }}
-                     disabled={loading}
+                     disabled={loading || bloqueado}
                   />
                </div>
 
@@ -213,8 +233,12 @@ export default function AccessPage() {
                <button
                   type="submit"
                   className="acesso-button"
-                  style={{ marginTop: "10px" }}
-                  disabled={loading}
+                  style={{
+                     marginTop: "10px",
+                     opacity: bloqueado ? 0.6 : 1,
+                     cursor: bloqueado ? "not-allowed" : "pointer",
+                  }}
+                  disabled={loading || bloqueado}
                >
                   {loading ? "Verificando..." : "Acessar Avaliação"}
                </button>

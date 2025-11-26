@@ -42,6 +42,18 @@ class ProjetoController extends Controller
         return implode(' ', $selecionadas);
     }
 
+    /**
+     * Verifica se o projeto atingiu o limite de 2 avaliações.
+     */
+    private function verificarLimiteAvaliacoes($idProjeto)
+    {
+        // Trava as linhas desse projeto enquanto conta para evitar uma race condition
+        return Avaliar::where('idProjeto', $idProjeto)
+            ->lockForUpdate()
+            ->get()
+            ->count() >= 2;
+    }
+
     public function verificarAcesso(Request $request, $id)
     {
         $request->validate(['senha' => 'required|string']);
@@ -50,6 +62,11 @@ class ProjetoController extends Controller
         
         if (!$projeto) {
             return response()->json(['message' => 'Projeto não encontrado'], 404);
+        }
+        
+        // Se já tem 2 avaliações, bloqueia o acesso imediatamente
+        if ($this->verificarLimiteAvaliacoes($id)) {
+            return response()->json(['message' => 'Este projeto já atingiu o limite máximo de avaliações.'], 403);
         }
 
         if ($request->senha === $projeto->senhaAvaliador) {
@@ -108,13 +125,7 @@ class ProjetoController extends Controller
             return response()->json(['message' => 'Projeto não encontrado'], 404);
         }
 
-        // Verifica limite de 2 avaliações (trava as linhas desse projeto enquanto conta para evitar uma race condition)
-        $avaliacoes = Avaliar::where('idProjeto', $id)
-            ->lockForUpdate()
-            ->get();
-        $count = $avaliacoes->count();
-
-        if ($count >= 2) {
+        if ($this->verificarLimiteAvaliacoes($id)) {
             return response()->json(['message' => 'Limite de avaliações excedido para este projeto.'], 400);
         }
 
