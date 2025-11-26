@@ -144,8 +144,8 @@ export default function ProjetosPage() {
    }
 
    return (
-      <div className="page-container">
-         <h1 className="block text-3xl font-semibold text-gray-700 mb-2">
+      <div className="page-container text-center">
+         <h1 className="block text-3xl font-semibold text-gray-700 mb-2 text-center">
             Projetos
          </h1>
 

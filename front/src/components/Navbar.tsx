@@ -5,11 +5,13 @@ const Navbar = () => {
    const { orientador, logout } = useAuth();
 
    return (
-      <div className="navbar bg-base-100 shadow-sm px-4">
+      <div className="navbar px-4 shadow-sm bg-[#3FA956] text-white">
          {/* Botão SIGPE → abre o sidebar */}
          <label
             htmlFor="my-drawer-1"
-            className="btn btn-ghost text-xl drawer-button"
+            className="btn btn-ghost text-xl drawer-button 
+                       text-white hover:text-black hover:bg-[#4ECB72] 
+                       transition rounded-xl ml-6"
          >
             SIGPE
          </label>
@@ -20,20 +22,28 @@ const Navbar = () => {
          {/* Botão Settings → dropdown */}
          {orientador && (
             <div className="dropdown dropdown-end">
-               <button tabIndex={0} className="btn btn-ghost">
+               <button
+                  tabIndex={0}
+                  className="btn btn-ghost text-white 
+                             hover:bg-[#4ECB72] hover:text-black 
+                             transition rounded-xl"
+               >
                   <Settings className="w-5 h-5" />
                </button>
 
                <ul
                   tabIndex={-1}
-                  className="dropdown-content menu bg-emerald-100 rounded-box w-52 p-2 shadow-md z-50"
+                  className="dropdown-content menu w-52 p-2 shadow-lg z-50
+                             bg-[#E4FFE9] text-black rounded-xl"
                >
                   <li>
                      <button
-                        className="flex items-center gap-2"
-                        onClick={logout} // chama função de logout
+                        onClick={logout}
+                        className="flex items-center gap-2 
+                                   hover:bg-[#C8FFD5] hover:text-black 
+                                   rounded-md transition"
                      >
-                        <LogOut className="w-4 h-4" />
+                        <LogOut className="w-6 h-6" />
                         Sair
                      </button>
                   </li>
