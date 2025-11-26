@@ -39,17 +39,24 @@ export default function EvaluationPage() {
    const { id } = useParams();
    const navigate = useNavigate();
    const [projeto, setProjeto] = useState<ProjetoDetalhado | null>(null);
-   const [avaliadores, setAvaliadores] = useState<Avaliador[]>([]);
    const [loading, setLoading] = useState(true);
    const [erro, setErro] = useState("");
    const [sucesso, setSucesso] = useState("");
 
    // Estados do formulário
-   const [selectedAvaliador, setSelectedAvaliador] = useState("");
    const [notas, setNotas] = useState<number[]>(new Array(5).fill(0));
-   const [faltas, setFaltas] = useState<Set<string>>(new Set()); // Armazena as matrículas dos alunos que faltaram
    const [observacoes, setObservacoes] = useState("");
    const [enviando, setEnviando] = useState(false);
+
+   // Estados de Nota Individual por Aluno
+   // Armazena quem está com o modo de edição ativado: { 'matricula': true/false }
+   const [editandoNotaAluno, setEditandoNotaAluno] = useState<{
+      [key: string]: boolean;
+   }>({});
+   // Armazena a nota individual (0 a 10) definida no slider do aluno: { 'matricula': 8 }
+   const [notasIndividuais, setNotasIndividuais] = useState<{
+      [key: string]: number;
+   }>({});
 
    // Estados da Busca de Avaliador
    const [avaliadorSearch, setAvaliadorSearch] = useState("");
@@ -128,14 +135,41 @@ export default function EvaluationPage() {
       setNotas(novasNotas);
    };
 
-   const toggleFalta = (matricula: string) => {
-      const novasFaltas = new Set(faltas);
-      if (novasFaltas.has(matricula)) {
-         novasFaltas.delete(matricula);
-      } else {
-         novasFaltas.add(matricula);
+   // Calcula a média do projeto (0-10) baseada nos 5 critérios
+   const calcularMediaProjeto = () => {
+      const soma = notas.reduce((acc, curr) => acc + curr, 0);
+      return soma / notas.length;
+   };
+
+   // Retorna a nota final (0-10) para um aluno específico
+   const getNotaFinalAluno = (matricula: string) => {
+      if (editandoNotaAluno[matricula]) {
+         return notasIndividuais[matricula] || 0;
       }
-      setFaltas(novasFaltas);
+      return calcularMediaProjeto();
+   };
+
+   const toggleEdicaoAluno = (matricula: string) => {
+      setEditandoNotaAluno((prev) => {
+         const novoEstado = !prev[matricula];
+
+         // Se ativou a edição, inicializa o slider com a nota atual do projeto
+         if (novoEstado) {
+            setNotasIndividuais((notasPrev) => ({
+               ...notasPrev,
+               [matricula]: calcularMediaProjeto(),
+            }));
+         }
+
+         return { ...prev, [matricula]: novoEstado };
+      });
+   };
+
+   const handleNotaIndividualChange = (matricula: string, valor: string) => {
+      setNotasIndividuais((prev) => ({
+         ...prev,
+         [matricula]: parseInt(valor, 10),
+      }));
    };
 
    const handleSubmit = async (e: React.FormEvent) => {
@@ -150,24 +184,36 @@ export default function EvaluationPage() {
 
       try {
          setEnviando(true);
+         // Prepara o objeto notasAlunos
+         // Enviaremos explicitamente a nota calculada para todos os alunos,
+         // seja ela a do projeto ou a personalizada.
+         const notasAlunosPayload: { [key: string]: number } = {};
+         projeto?.alunos.forEach((aluno) => {
+            // Obtém a nota na escala 0-10
+            const nota0to10 = getNotaFinalAluno(aluno.matriculaAluno);
+
+            // Converte para escala 0-100 para enviar ao backend
+            notasAlunosPayload[aluno.matriculaAluno] = nota0to10 * 10;
+         });
+
          const payload = {
             matriculaSiape: selectedAvaliadorObj.matriculaSiape,
             notas: notas,
-            alunosFaltantes: Array.from(faltas),
+            notasAlunos: notasAlunosPayload,
             observacoes: observacoes,
          };
 
          await apiClient.post(`/projetos/${id}/avaliar`, payload);
          setSucesso("Avaliação registrada com sucesso!");
 
-         // Reset dos campos
+         // Reset
          setSelectedAvaliadorObj(null);
          setAvaliadorSearch("");
          setNotas(new Array(5).fill(0));
-         setFaltas(new Set());
+         setEditandoNotaAluno({});
+         setNotasIndividuais({});
          setObservacoes("");
 
-         // Navega para os projetos após avaliar
          navigate("/projetos");
       } catch (error) {
          console.error("Erro ao enviar avaliação", error);
@@ -189,6 +235,9 @@ export default function EvaluationPage() {
             <h2>Projeto não encontrado.</h2>
          </div>
       );
+
+   // Para exibição apenas (com 1 casa decimal)
+   const mediaProjetoAtual = calcularMediaProjeto().toFixed(1);
 
    return (
       <div className="evaluation-container">
@@ -393,33 +442,159 @@ export default function EvaluationPage() {
                   ))}
                </div>
 
-               {/* Checkbox de Presença */}
+               {/* Modificação de Nota Individual */}
                <div className="attendance-section">
-                  <div className="attendance-title">Registro de Ausências</div>
+                  <div
+                     className="attendance-title"
+                     style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                     }}
+                  >
+                     <span>Modificação de Nota Individual</span>
+                     <span
+                        style={{
+                           fontSize: "0.8rem",
+                           fontWeight: "normal",
+                           color: "#666",
+                        }}
+                     >
+                        Nota Base do Projeto:{" "}
+                        <strong>{mediaProjetoAtual}</strong>
+                     </span>
+                  </div>
 
                   {projeto.alunos && projeto.alunos.length > 0 ? (
-                     <div className="students-grid">
-                        {projeto.alunos.map((aluno) => (
-                           <label
-                              key={aluno.matriculaAluno}
-                              className="checkbox-wrapper"
-                           >
-                              <input
-                                 type="checkbox"
-                                 checked={faltas.has(aluno.matriculaAluno)}
-                                 onChange={() =>
-                                    toggleFalta(aluno.matriculaAluno)
-                                 }
-                              />
-                              <span className="student-name">
-                                 {aluno.nomeAluno}
-                              </span>
-                           </label>
-                        ))}
+                     <div
+                        className="students-list"
+                        style={{
+                           display: "flex",
+                           flexDirection: "column",
+                           gap: "15px",
+                        }}
+                     >
+                        {projeto.alunos.map((aluno) => {
+                           const isEditing =
+                              editandoNotaAluno[aluno.matriculaAluno];
+                           const notaFinal = getNotaFinalAluno(
+                              aluno.matriculaAluno
+                           );
+
+                           return (
+                              <div
+                                 key={aluno.matriculaAluno}
+                                 className="student-grade-item"
+                                 style={{
+                                    border: "1px solid #eee",
+                                    padding: "10px",
+                                    borderRadius: "6px",
+                                    backgroundColor: isEditing
+                                       ? "#fffaf0"
+                                       : "#fff",
+                                 }}
+                              >
+                                 <div
+                                    style={{
+                                       display: "flex",
+                                       justifyContent: "space-between",
+                                       alignItems: "center",
+                                       marginBottom: isEditing ? "10px" : "0",
+                                    }}
+                                 >
+                                    <span
+                                       className="student-name"
+                                       style={{ fontWeight: "500" }}
+                                    >
+                                       {aluno.nomeAluno}
+                                    </span>
+
+                                    <div
+                                       style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "10px",
+                                       }}
+                                    >
+                                       <span
+                                          style={{
+                                             fontWeight: "bold",
+                                             color: isEditing
+                                                ? "#d35400"
+                                                : "#2d6a4f",
+                                          }}
+                                       >
+                                          Nota: {notaFinal}
+                                       </span>
+                                       <button
+                                          type="button"
+                                          onClick={() =>
+                                             toggleEdicaoAluno(
+                                                aluno.matriculaAluno
+                                             )
+                                          }
+                                          style={{
+                                             padding: "4px 8px",
+                                             fontSize: "0.8rem",
+                                             cursor: "pointer",
+                                             backgroundColor: isEditing
+                                                ? "#e74c3c"
+                                                : "#28a745",
+                                             color: "white",
+                                             border: "none",
+                                             borderRadius: "4px",
+                                          }}
+                                       >
+                                          {isEditing
+                                             ? "Cancelar / Usar Média"
+                                             : "Alterar Nota"}
+                                       </button>
+                                    </div>
+                                 </div>
+
+                                 {isEditing && (
+                                    <div
+                                       className="student-slider"
+                                       style={{ paddingTop: "5px" }}
+                                    >
+                                       <input
+                                          type="range"
+                                          min="0"
+                                          max="10"
+                                          step="1"
+                                          value={
+                                             notasIndividuais[
+                                                aluno.matriculaAluno
+                                             ] || 0
+                                          }
+                                          onChange={(e) =>
+                                             handleNotaIndividualChange(
+                                                aluno.matriculaAluno,
+                                                e.target.value
+                                             )
+                                          }
+                                          style={{ width: "100%" }}
+                                       />
+                                       <div
+                                          style={{
+                                             display: "flex",
+                                             justifyContent: "space-between",
+                                             fontSize: "0.75rem",
+                                             color: "#888",
+                                          }}
+                                       >
+                                          <span>0 (Falta/Mínimo)</span>
+                                          <span>10 (Máximo)</span>
+                                       </div>
+                                    </div>
+                                 )}
+                              </div>
+                           );
+                        })}
                      </div>
                   ) : (
                      <p style={{ color: "#666", fontStyle: "italic" }}>
-                        Nenhum aluno vinculado a este projeto.
+                        Nenhum aluno vinculado.
                      </p>
                   )}
                </div>
@@ -435,6 +610,7 @@ export default function EvaluationPage() {
                         placeholder="Digite suas considerações..."
                         value={observacoes}
                         onChange={(e) => setObservacoes(e.target.value)}
+                        style={{ resize: "none" }}
                      ></textarea>
                   </div>
 

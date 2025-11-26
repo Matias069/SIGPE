@@ -14,11 +14,16 @@ use Illuminate\Validation\Rule;
 
 class ProjetoController extends Controller
 {
-    private $palavras;
+    private static $palavras = null;
 
     public function __construct()
     {
-        $this->palavras = json_decode(file_get_contents(storage_path('palavras.json')), true);
+        if (self::$palavras === null) {
+            self::$palavras = json_decode(
+                file_get_contents(storage_path('palavras.json')),
+                true
+            );
+        }
     }
     
     private function gerarSenhaAvaliador() {
@@ -57,7 +62,7 @@ class ProjetoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         // Carrega o orientador junto para listagens otimizadas e com avaliações para calcular status
         $projetos = Projeto::with(['orientador', 'avaliacoes'])->get();
@@ -117,7 +122,8 @@ class ProjetoController extends Controller
             'matriculaSiape' => 'required|string|exists:avaliador,matriculaSiape',
             'notas' => 'required|array|size:5',
             'notas.*' => 'numeric|min:0|max:10',
-            'alunosFaltantes' => 'array',
+            'notasAlunos' => 'nullable|array',
+            'notasAlunos.*' => 'numeric|min:0|max:100', // Nota final do aluno (escala 0-100)
             'observacoes' => 'nullable|string|max:500'
         ]);
 
@@ -153,16 +159,21 @@ class ProjetoController extends Controller
             // Salvar na tabela Examinar (Nota Individual dos Alunos)
             // Busca todos os alunos do projeto
             $alunos = Aluno::where('idProjeto', $id)->get();
-            $faltantes = collect($validated['alunosFaltantes'] ?? []);
+            $notasIndividuais = $validated['notasAlunos'] ?? [];
 
             foreach ($alunos as $aluno) {
-                // Se o aluno está na lista de faltantes, nota 0, se não, nota da avaliação
-                $notaAluno = $faltantes->contains($aluno->matriculaAluno) ? 0 : $mediaMultiplicada;
+                // Se veio uma nota específica para o aluno no array notasAlunos, usa ela
+                // Caso contrário, usa a média geral do projeto
+                if (array_key_exists($aluno->matriculaAluno, $notasIndividuais)) {
+                    $notaFinalAluno = $notasIndividuais[$aluno->matriculaAluno];
+                } else {
+                    $notaFinalAluno = $mediaMultiplicada;
+                }
 
                 Examinar::create([
                     'matriculaSiape' => $validated['matriculaSiape'],
                     'matriculaAluno' => $aluno->matriculaAluno,
-                    'notaAluno' => $notaAluno
+                    'notaAluno' => $notaFinalAluno
                 ]);
             }
 

@@ -197,6 +197,7 @@ export default function CadastrarProjetoPage() {
                      }}
                      required
                      rows={6}
+                     style={{ resize: "none" }}
                      className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none resize-vertical"
                   />
                   {descricaoErro && (
