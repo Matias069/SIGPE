@@ -16,6 +16,30 @@ class AvaliadorController extends Controller
     }
 
     /**
+     * Busca todos os avaliadores por nome ou matrícula.
+     */
+    public function search(Request $request)
+    {
+        // Começa a query
+        $query = Avaliador::query();
+
+        // Se houver um parâmetro 'search' na URL e não estiver vazio
+        if ($request->has('search') && $request->query('search') != '') {
+            // Converte o termo de busca para minúsculas
+            $searchTerm = strtolower($request->query('search'));
+
+            $query->where(function ($q) use ($searchTerm) {
+                // Case Insensitive LIKE
+                $q->where('nomeAvaliador', 'ILIKE', "%{$searchTerm}%")
+                  ->orWhere('matriculaSiape', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        // Retorna as turmas encontrados (limitado a 10 para o dropdown)
+        return $query->take(10)->get();
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
