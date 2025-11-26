@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import LogoutPage from "./pages/LogoutPage";
 import AccessPage from "./pages/AccessPage";
 import EvaluationPage from "./pages/EvaluationPage";
+import RelatorioPage from "./pages/RelatorioPage";
 import { AuthProvider } from "./contexts/auth/AuthProvider";
 import { AdminRoute } from "./components/routing/AdminRoute";
 import { ProtectedRoute } from "./components/routing/ProtectedRoute";
@@ -73,6 +74,10 @@ function App() {
                            <Route
                               path="/cadastrarturma"
                               element={<CadastrarTurmaPage />}
+                           />
+                           <Route
+                              path="/relatorios"
+                              element={<RelatorioPage />}
                            />
                         </Route>
 

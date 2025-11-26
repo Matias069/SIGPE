@@ -60,9 +60,7 @@ export default function EvaluationPage() {
 
    // Estados da Busca de Avaliador
    const [avaliadorSearch, setAvaliadorSearch] = useState("");
-   const [avaliadoresEncontrados, setAvaliadoresEncontrados] = useState<
-      Avaliador[]
-   >([]);
+   const [searchResults, setSearchResults] = useState<Avaliador[]>([]);
    const [selectedAvaliadorObj, setSelectedAvaliadorObj] =
       useState<Avaliador | null>(null);
    const [showDropdown, setShowDropdown] = useState(false);
@@ -92,7 +90,7 @@ export default function EvaluationPage() {
    // Efeito para busca dinâmica de avaliadores (Debounce)
    useEffect(() => {
       if (avaliadorSearch.trim() === "") {
-         setAvaliadoresEncontrados([]);
+         setSearchResults([]);
          setShowDropdown(false);
          setIsSearchingAvaliador(false);
          return;
@@ -109,14 +107,24 @@ export default function EvaluationPage() {
       setIsSearchingAvaliador(true);
       const timer = setTimeout(() => {
          apiClient
-            .get(`/avaliadores?search=${encodeURIComponent(avaliadorSearch)}`)
+            .get(
+               `/avaliadores/search?search=${encodeURIComponent(
+                  avaliadorSearch
+               )}`
+            )
             .then((response) => {
-               setAvaliadoresEncontrados(response.data);
+               setSearchResults(response.data);
                setShowDropdown(response.data.length > 0);
             })
-            .catch((error) =>
-               console.error("Erro ao buscar avaliadores", error)
-            )
+            .catch((error) => {
+               console.error("Erro ao buscar avaliadores", error);
+               setErro(
+                  handleApiError(
+                     error,
+                     "Não foi possível carregar os avaliadores."
+                  )
+               );
+            })
             .finally(() => setIsSearchingAvaliador(false));
       }, 300);
 
@@ -276,7 +284,7 @@ export default function EvaluationPage() {
                               }
                            }}
                            onFocus={() => {
-                              if (avaliadoresEncontrados.length > 0)
+                              if (searchResults.length > 0)
                                  setShowDropdown(true);
                            }}
                            // Pequeno delay no onBlur para permitir o clique no item da lista
@@ -326,7 +334,7 @@ export default function EvaluationPage() {
                                  boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
                               }}
                            >
-                              {avaliadoresEncontrados.map((av) => (
+                              {searchResults.map((av) => (
                                  <li
                                     key={av.matriculaSiape}
                                     onClick={() => handleSelectAvaliador(av)}
@@ -390,24 +398,6 @@ export default function EvaluationPage() {
                         />
                      </div>
                   </div>
-
-                  {erro && (
-                     <div
-                        className="error-message"
-                        style={{
-                           color: "#721c24",
-                           backgroundColor: "#f8d7da",
-                           borderColor: "#f5c6cb",
-                           padding: "10px",
-                           marginTop: "10px",
-                           borderRadius: "5px",
-                           fontSize: "0.9rem",
-                           textAlign: "center",
-                        }}
-                     >
-                        {erro}
-                     </div>
-                  )}
                </div>
 
                {/* Critérios com Sliders */}
@@ -600,7 +590,7 @@ export default function EvaluationPage() {
                   )}
                </div>
 
-               {/* Observações e Botões */}
+               {/* Observações */}
                <div className="evaluation-footer">
                   <div className="comments-section">
                      <label style={{ fontWeight: "bold", color: "#2d6a4f" }}>
@@ -615,11 +605,29 @@ export default function EvaluationPage() {
                      ></textarea>
                   </div>
 
+                  {erro && (
+                     <div
+                        className="error-message"
+                        style={{
+                           color: "#721c24",
+                           backgroundColor: "#f8d7da",
+                           borderColor: "#f5c6cb",
+                           padding: "10px",
+                           marginTop: "10px",
+                           borderRadius: "5px",
+                           fontSize: "0.9rem",
+                           textAlign: "center",
+                        }}
+                     >
+                        {erro}
+                     </div>
+                  )}
+
                   <div className="form-actions">
                      <button
                         type="button"
                         className="btn-cancel"
-                        onClick={() => navigate("/")}
+                        onClick={() => navigate("/projetos")}
                      >
                         Cancelar
                      </button>

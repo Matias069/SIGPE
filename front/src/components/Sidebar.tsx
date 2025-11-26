@@ -9,6 +9,7 @@ import {
    LogIn,
    LogOut,
    UserCog,
+   NotebookText,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -25,6 +26,7 @@ export default function Sidebar() {
       "/cadastrarorientador": <UserCog size={22} className="opacity-80" />,
       "/cadastrarturma": <Users size={22} className="opacity-80" />,
       "/cadastrarprojeto": <FilePlus size={22} className="opacity-80" />,
+      "/relatorios": <NotebookText size={22} className="opacity-80" />,
       "/login": <LogIn size={22} className="opacity-80" />,
       "/logout": <LogOut size={22} className="opacity-80" />,
    } as const;
@@ -39,7 +41,8 @@ export default function Sidebar() {
          { name: "Aluno", path: "/cadastraraluno" },
          { name: "Avaliador", path: "/cadastraravaliador" },
          { name: "Orientador", path: "/cadastrarorientador" },
-         { name: "Turma", path: "/cadastrarturma" }
+         { name: "Turma", path: "/cadastrarturma" },
+         { name: "Relatório de Notas", path: "/relatorios" }
       );
    }
 

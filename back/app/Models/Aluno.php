@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Aluno extends Model
 {
@@ -24,9 +25,9 @@ class Aluno extends Model
     ];
 
     // Um Aluno pertence a um Projeto
-    public function projeto(): BelongsTo
+    public function projeto(): HasOne
     {
-        return $this->belongsTo(Projeto::class, 'idProjeto', 'idProjeto');
+        return $this->hasOne(Projeto::class, 'matriculaAluno', 'matriculaAluno');
     }
 
     // Um Aluno pertence a uma Turma
@@ -36,8 +37,8 @@ class Aluno extends Model
     }
 
     // Relacionamento N-para-N com Avaliador (tabela examinar)
-    public function examinadores(): BelongsToMany
+    public function exames(): BelongsToMany
     {
-        return $this->belongsToMany(Avaliador::class, 'examinar', 'matriculaAluno', 'matriculaSiape')->withPivot('nota');
+        return $this->belongsToMany(Avaliador::class, 'examinar', 'matriculaAluno', 'matriculaSiape')->withPivot('notaAluno');
     }
 }

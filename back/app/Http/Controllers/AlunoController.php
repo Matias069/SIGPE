@@ -40,6 +40,46 @@ class AlunoController extends Controller
     }
 
     /**
+     * Calcula e retorna a nota do aluno baseada nas avaliações.
+     */
+    public function calcularNota($matriculaAluno)
+    {
+        // Busca o aluno e carrega os exames (relacionamento com a tabela pivot examinar)
+        $aluno = Aluno::with('exames')->find($matriculaAluno);
+
+        if (!$aluno) {
+            return response()->json(['message' => 'Aluno não encontrado'], 404);
+        }
+
+        $qtdAvaliacoes = $aluno->exames->count();
+        $status = 'pendente';
+        $notaFinal = null;
+
+        if ($qtdAvaliacoes === 0) {
+            $status = 'pendente';
+            $notaFinal = null;
+        } elseif ($qtdAvaliacoes === 1) {
+            // Se tiver apenas 1 nota, definimos como 'em_andamento' (aviso)
+            $status = 'em_andamento';
+            // Pega a nota da única avaliação disponível
+            $notaFinal = $aluno->exames->first()->pivot->notaAluno;
+        } else {
+            // 2 avaliações
+            $status = 'concluido';
+            // Calcula a média das colunas 'notaAluno' da tabela pivot
+            $notaFinal = $aluno->exames->avg('pivot.notaAluno');
+        }
+
+        return response()->json([
+            'matricula' => $aluno->matriculaAluno,
+            'nome' => $aluno->nomeAluno,
+            'status_avaliacao' => $status, // pendente, em_andamento (aviso), concluido
+            'nota_final' => $notaFinal !== null ? number_format($notaFinal/100, 2) : null,
+            'qtd_avaliacoes' => $qtdAvaliacoes
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

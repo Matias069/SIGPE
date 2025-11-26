@@ -88,6 +88,7 @@ class ProjetoController extends Controller
         $projetos->each(function ($projeto) {
             $qtdAvaliacoes = $projeto->avaliacoes->count();
             
+            // Cria o atributo virtual status_avaliacao
             if ($qtdAvaliacoes === 0) {
                 $projeto->status_avaliacao = 'pendente';
                 $projeto->nota_final = null;

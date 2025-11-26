@@ -42,7 +42,7 @@ export default function CadastrarAlunoPage() {
       setIsLoadingTurmas(true);
       const timer = setTimeout(() => {
          apiClient
-            .get(`/turmas?search=${encodeURIComponent(turmaSearch)}`)
+            .get(`/turmas/search?search=${encodeURIComponent(turmaSearch)}`)
             .then((response) => {
                setSearchResults(response.data);
                setShowDropdown(response.data.length > 0);

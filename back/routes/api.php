@@ -7,12 +7,15 @@ use App\Http\Controllers\AlunoController;
 use App\Http\Controllers\TurmaController;
 use App\Http\Controllers\OrientadorController;
 use App\Http\Controllers\AvaliadorController;
+use App\Http\Controllers\RelatorioController;
 
 // Login
 Route::post('/login', [AuthOrientadorController::class, 'login']);
 
 // Listar avaliadores
 Route::get('/avaliadores', [AvaliadorController::class, 'index']);
+// Pesquisar avaliadores
+Route::get('/avaliadores/search', [AvaliadorController::class, 'search']);
 
 // Listar todos os projetos
 Route::get('/projetos', [ProjetoController::class, 'index']);
@@ -43,9 +46,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Requer Admin
     Route::middleware('admin')->group(function () {
+        // Rotas de Relatório
+        Route::get('/relatorios', [RelatorioController::class, 'index']);
+
         // Rotas de Turma
         Route::get('/turmas', [TurmaController::class, 'index']);
         Route::post('/turmas', [TurmaController::class, 'store']);
+        // Pesquisar turmas
+        Route::get('/turmas/search', [TurmaController::class, 'search']);
 
         // Rotas de Aluno
         Route::get('/alunos', [AlunoController::class, 'index']);

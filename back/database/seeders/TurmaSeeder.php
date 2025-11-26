@@ -13,7 +13,7 @@ class TurmaSeeder extends Seeder
     public function run(): void
     {
         $cursos = ['Agropecuária', 'Meio Ambiente', 'Informática', 'Agroindústria'];
-        $total = 100;
+        $total = 1000;
         for ($i = 0; $i < $total; ++$i) {
             Turma::create([
                 'numeroTurma' => ($i % 3 + 1)*100 + $i,

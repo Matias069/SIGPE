@@ -35,7 +35,7 @@ class AvaliadorController extends Controller
             });
         }
 
-        // Retorna as turmas encontrados (limitado a 10 para o dropdown)
+        // Retorna os avaliadores encontrados (limitado a 10 para o dropdown)
         return $query->take(10)->get();
     }
 
