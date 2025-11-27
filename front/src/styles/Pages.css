@@ -963,8 +963,11 @@
    cursor: pointer;
    transition: background-color 0.3s ease;
    text-align: center;
-   margin-top: 10px;
    margin-right: auto;
+}
+
+.detail-button:hover {
+   background-color: #1b4d3e;
 }
 
 .project-card {
@@ -985,8 +988,11 @@
 .card-content {
    padding: 15px;
    display: flex;
-   flex-direction: column;
    gap: 10px;
+   display: flex;
+   flex-direction: column;
+   justify-content: space-between;
+   height: 100%;
 }
 
 /* Projetos dentro do container */

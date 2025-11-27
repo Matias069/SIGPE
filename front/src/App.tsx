@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import HomePage from "./pages/HomePage";
 import ProjectsPage from "./pages/ProjectsPage";
+import EditarProjetoPage from "./pages/EditarProjetoPage";
 import LoginPage from "./pages/LoginPage";
 import LogoutPage from "./pages/LogoutPage";
 import AccessPage from "./pages/AccessPage";
@@ -86,6 +87,10 @@ function App() {
                            <Route
                               path="/cadastrarprojeto"
                               element={<CadastrarProjetoPage />}
+                           />
+                           <Route
+                              path="/projetos/:id/editar"
+                              element={<EditarProjetoPage />}
                            />
                         </Route>
                      </Routes>

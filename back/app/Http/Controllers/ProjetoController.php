@@ -255,11 +255,11 @@ class ProjetoController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Valida os dados do projeto.
      */
-    public function store(Request $request)
+    private function validarDadosProjeto($request)
     {
-        $validatedData = $request->validate([
+        return $validatedData = $request->validate([
             'nomeProjeto' => 'required|string|max:100',
             'descricaoProjeto' => [
                 'required',
@@ -296,6 +296,14 @@ class ProjetoController extends Controller
                 Rule::exists('aluno', 'matriculaAluno')->whereNull('idProjeto'),
             ],
         ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validatedData = $this->validarDadosProjeto($request);
 
         $bannerPath = null;
 
@@ -373,7 +381,83 @@ class ProjetoController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $projeto = Projeto::find($id);
+        if (!$projeto) {
+            return response()->json(['message' => 'Projeto não encontrado'], 404);
+        }
+
+        $validatedData = $request->validate([
+            'nomeProjeto' => 'required|string|max:100',
+            'descricaoProjeto' => [
+                'required',
+                'string',
+                'max:5000',
+                function ($attribute, $value, $fail) {
+                    $contarPalavras = function ($texto) {
+                        preg_match_all("/[\p{L}\p{N}]+(?:[-'][\p{L}\p{N}]+)*/u", $texto, $correspondencias);
+                        return count($correspondencias[0]);
+                    };
+                    $quantidadePalavras = $contarPalavras($value);
+                    if ($quantidadePalavras < 250) $fail("Mínimo 250 palavras.");
+                    if ($quantidadePalavras > 500) $fail("Máximo 500 palavras.");
+                }
+            ],
+            'bannerProjeto' => 'nullable|file|mimes:jpeg,png,jpg,pdf,pptx|max:2048',
+            'alunos' => 'required|array|min:3|max:8',
+            'alunos.*' => [
+                'required',
+                'string',
+                'size:11',
+                'distinct',
+                // Permite se o aluno não tem projeto ou se o projeto dele é o atual (para não bloquear os próprios alunos)
+                function ($attribute, $value, $fail) use ($id) {
+                    $aluno = Aluno::where('matriculaAluno', $value)->first();
+                    if (!$aluno) {
+                        $fail("Aluno não encontrado.");
+                        return;
+                    }
+                    if ($aluno->idProjeto !== null && $aluno->idProjeto != $id) {
+                        $fail("O aluno $value já pertence a outro projeto.");
+                    }
+                }
+            ],
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // Atualiza Banner se enviado
+            if ($request->hasFile('bannerProjeto')) {
+                // Deleta antigo se existir
+                if ($projeto->bannerProjeto && Storage::disk('public')->exists($projeto->bannerProjeto)) {
+                    Storage::disk('public')->delete($projeto->bannerProjeto);
+                }
+                // Salva novo
+                $projeto->bannerProjeto = $request->file('bannerProjeto')->store('banners', 'public');
+            }
+
+            $projeto->nomeProjeto = $validatedData['nomeProjeto'];
+            $projeto->descricaoProjeto = $validatedData['descricaoProjeto'];
+            // Senha e Orientador não mudam no update
+            $projeto->save();
+
+            // Sincronização dos Alunos
+            // Remove vínculo de todos os alunos que estavam neste projeto
+            Aluno::where('idProjeto', $id)->update(['idProjeto' => null]);
+
+            // Adiciona vínculo para a nova lista
+            Aluno::whereIn('matriculaAluno', $validatedData['alunos'])
+                 ->update(['idProjeto' => $projeto->idProjeto]);
+
+            DB::commit();
+            return response()->json($projeto);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Erro ao atualizar o projeto.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -381,6 +465,45 @@ class ProjetoController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $projeto = Projeto::find($id);
+
+        if (!$projeto) {
+            return response()->json(['message' => 'Projeto não encontrado'], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Buscar matrículas dos alunos para limpar as notas individuais (Examinar)
+            // É necessário fazer isso antes de desvincular os alunos
+            $matriculasAlunos = Aluno::where('idProjeto', $id)->pluck('matriculaAluno');
+
+            if ($matriculasAlunos->isNotEmpty()) {
+                Examinar::whereIn('matriculaAluno', $matriculasAlunos)->delete();
+            }
+
+            // Desvincular Alunos
+            Aluno::where('idProjeto', $id)->update(['idProjeto' => null]);
+
+            // Excluir Avaliações (Dependência)
+            Avaliar::where('idProjeto', $id)->delete();
+
+            // Excluir Banner físico
+            if ($projeto->bannerProjeto && Storage::disk('public')->exists($projeto->bannerProjeto)) {
+                Storage::disk('public')->delete($projeto->bannerProjeto);
+            }
+
+            // Excluir Projeto
+            $projeto->delete();
+
+            DB::commit();
+            return response()->json(['message' => 'Projeto excluído com sucesso.']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Erro ao excluir o projeto.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

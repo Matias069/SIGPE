@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/auth/useAuth";
+import apiClient from "../apiClient"; // Importado para o delete
 import ImgExpocanpi from "../assets/Img_Expocanpi.jpg"; // Usaremos esta como imagem padrão
 // @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import "../styles/Pages.css";
@@ -15,6 +16,7 @@ interface Projeto {
    senhaAvaliador: string;
    anoProjeto?: number;
    orientador: {
+      idOrientador: number;
       nomeOrientador: string;
    };
    status_avaliacao?: "pendente" | "em_andamento" | "concluido";
@@ -24,12 +26,24 @@ interface Projeto {
 // Definir a interface para as props que o Card vai receber
 interface ProjectCardProps {
    projeto: Projeto;
+   onDeleteSuccess?: () => void;
+   onDeleteError?: (msg: string) => void;
 }
 
-export function ProjectCard({ projeto }: ProjectCardProps) {
+export function ProjectCard({ projeto, onDeleteSuccess }: ProjectCardProps) {
    const navigate = useNavigate();
    const { orientador } = useAuth(); // Obtém o usuário logado
+
+   // Estados para o popup de deleção
+   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+   const [isDeleting, setIsDeleting] = useState(false);
+
+   // Estado de erro
+   const [erro, setErro] = useState<string | null>(null);
+
+   // Permissões
    const isAdmin = orientador?.isAdmin;
+   const isOwner = orientador?.idOrientador === projeto.orientador.idOrientador;
 
    // Definir a URL base do seu backend para construir o link da imagem
    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -52,7 +66,7 @@ export function ProjectCard({ projeto }: ProjectCardProps) {
          .catch(() => {
             setFinalImageUrl(ImgExpocanpi);
          });
-   }, [projeto.bannerProjeto]);
+   }, [projeto.bannerProjeto, BACKEND_URL]);
 
    // Função para truncar a descrição
    const truncate = (str: string, num: number) => {
@@ -62,6 +76,37 @@ export function ProjectCard({ projeto }: ProjectCardProps) {
    const handleCardClick = () => {
       // O backend bloqueará a 3ª avaliação
       navigate(`/projetos/${projeto.idProjeto}/acessoavaliador`);
+   };
+
+   const handleEdit = () => {
+      navigate(`/projetos/${projeto.idProjeto}/editar`);
+   };
+
+   const handleDeleteClick = async () => {
+      setShowDeleteConfirm(!showDeleteConfirm);
+      setErro(null);
+   };
+
+   const confirmDelete = async () => {
+      try {
+         setIsDeleting(true);
+         await apiClient.delete(`/projetos/${projeto.idProjeto}`);
+         setShowDeleteConfirm(false);
+
+         // Chama o callback do pai apenas no sucesso (para atualizar lista e msg global)
+         if (onDeleteSuccess) {
+            onDeleteSuccess();
+         } else {
+            window.location.reload();
+         }
+      } catch (error) {
+         console.error(error);
+         setShowDeleteConfirm(false);
+         // Define o erro apenas localmente no card
+         setErro("Erro ao deletar projeto.");
+      } finally {
+         setIsDeleting(false);
+      }
    };
 
    // Lógica de exibição do status e nota
@@ -163,15 +208,126 @@ export function ProjectCard({ projeto }: ProjectCardProps) {
                </div>
             )}
 
-            {/* Link para a página de acesso do avaliador específica deste projeto */}
-            <button
-               type="button"
-               className="detail-button"
-               onClick={handleCardClick}
-               style={{ textDecoration: "none", marginTop: "auto" }}
+            {erro && (
+               <div className="text-red-800 bg-red-100 border border-red-300 px-4 py-2 rounded mt-2 text-sm text-center">
+                  {erro}
+               </div>
+            )}
+
+            <div
+               style={{
+                  marginTop: "auto",
+                  display: "flex",
+                  gap: "5px",
+                  flexDirection: "row",
+                  width: "100%",
+                  flexWrap: "wrap",
+               }}
             >
-               Avaliar Projeto
-            </button>
+               <button
+                  type="button"
+                  className="detail-button"
+                  onClick={handleCardClick}
+                  style={{ textDecoration: "none", marginTop: "auto", flex: 1 }}
+               >
+                  Avaliar
+               </button>
+               <div
+                  style={{
+                     display: "flex",
+                     gap: "5px",
+                     width: "100%",
+                     position: "relative",
+                  }}
+               >
+                  {(isAdmin || isOwner) && (
+                     <button
+                        type="button"
+                        onClick={handleEdit}
+                        className="detail-button"
+                        style={{
+                           flex: 1,
+                           backgroundColor: "#007bff",
+                           marginTop: 0,
+                        }}
+                     >
+                        Modificar
+                     </button>
+                  )}
+                  {isAdmin && (
+                     <>
+                        <button
+                           type="button"
+                           onClick={handleDeleteClick}
+                           className="detail-button"
+                           style={{
+                              flex: 1,
+                              backgroundColor: "#dc3545",
+                              marginTop: 0,
+                           }}
+                        >
+                           {showDeleteConfirm ? "Cancelar" : "Deletar"}
+                        </button>
+
+                        {showDeleteConfirm && (
+                           <div
+                              style={{
+                                 position: "absolute",
+                                 bottom: "110%", // Acima dos botões
+                                 right: "0",
+                                 width: "200px",
+                                 backgroundColor: "white",
+                                 border: "1px solid #ddd",
+                                 borderRadius: "8px",
+                                 boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+                                 zIndex: 10,
+                                 padding: "15px",
+                                 textAlign: "center",
+                              }}
+                           >
+                              <p
+                                 style={{
+                                    margin: "0 0 10px 0",
+                                    fontSize: "0.9rem",
+                                    color: "#333",
+                                    fontWeight: "bold",
+                                 }}
+                              >
+                                 Tem certeza?
+                              </p>
+                              <p
+                                 style={{
+                                    margin: "0 0 10px 0",
+                                    fontSize: "0.8rem",
+                                    color: "#666",
+                                 }}
+                              >
+                                 Essa ação não pode ser desfeita.
+                              </p>
+                              <button
+                                 onClick={confirmDelete}
+                                 disabled={isDeleting}
+                                 style={{
+                                    width: "100%",
+                                    padding: "6px",
+                                    backgroundColor: "#dc3545",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: "4px",
+                                    cursor: "pointer",
+                                    fontSize: "0.85rem",
+                                 }}
+                              >
+                                 {isDeleting
+                                    ? "Deletando..."
+                                    : "Confirmar Exclusão"}
+                              </button>
+                           </div>
+                        )}
+                     </>
+                  )}
+               </div>
+            </div>
          </div>
       </div>
    );

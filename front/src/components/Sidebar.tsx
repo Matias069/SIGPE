@@ -36,18 +36,21 @@ export default function Sidebar() {
       { name: "Projetos", path: "/projetos" },
    ];
 
+   if (isAuthenticated) {
+      navItems.push({ name: "Cadastrar Projeto", path: "/cadastrarprojeto" });
+   }
+
    if (isAuthenticated && isAdmin) {
       navItems.push(
-         { name: "Aluno", path: "/cadastraraluno" },
-         { name: "Avaliador", path: "/cadastraravaliador" },
-         { name: "Orientador", path: "/cadastrarorientador" },
-         { name: "Turma", path: "/cadastrarturma" },
-         { name: "Relatório de Notas", path: "/relatorios" }
+         { name: "Cadastrar Aluno", path: "/cadastraraluno" },
+         { name: "Cadastrar Avaliador", path: "/cadastraravaliador" },
+         { name: "Cadastrar Orientador", path: "/cadastrarorientador" },
+         { name: "Cadastrar Turma", path: "/cadastrarturma" }
       );
    }
 
-   if (isAuthenticated) {
-      navItems.push({ name: "Cadastrar Projeto", path: "/cadastrarprojeto" });
+   if (isAuthenticated && isAdmin) {
+      navItems.push({ name: "Relatório de Notas", path: "/relatorios" });
    }
 
    navItems.push(

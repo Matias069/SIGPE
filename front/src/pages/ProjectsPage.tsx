@@ -251,6 +251,7 @@ type Projeto = {
    senhaAvaliador: string;
    anoProjeto?: number;
    orientador: {
+      idOrientador: number;
       nomeOrientador: string;
    };
 };
@@ -266,6 +267,10 @@ export default function ProjetosPage() {
 
    const [loading, setLoading] = useState(true); // Controla apenas o "Carregando..." inicial da página (tela cheia)
    const [isSearching, setIsSearching] = useState(false); // Controla o feedback "Buscando..." (inline)
+
+   // Estados de mensagens globais de deleção
+   const [msgGlobal, setMsgGlobal] = useState("");
+   const [erroGlobal, setErroGlobal] = useState("");
 
    // Estado para filtro de ano (Apenas Admin)
    const currentYear = new Date().getFullYear().toString();
@@ -433,6 +438,41 @@ export default function ProjetosPage() {
             </div>
          )}
 
+         {/* LOCAL DAS MENSAGENS DE SUCESSO E ERRO (GLOBAL) */}
+         {msgGlobal && (
+            <div
+               style={{
+                  marginTop: "10px",
+                  marginBottom: "10px",
+                  color: "#155724",
+                  backgroundColor: "#d4edda",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  fontSize: "0.9rem",
+                  border: "1px solid #c3e6cb",
+               }}
+            >
+               {msgGlobal}
+            </div>
+         )}
+         {erroGlobal && (
+            <div
+               style={{
+                  color: "#721c24",
+                  backgroundColor: "#f8d7da",
+                  borderColor: "#f5c6cb",
+                  padding: "10px",
+                  marginTop: "10px",
+                  marginBottom: "10px",
+                  borderRadius: "5px",
+                  fontSize: "0.9rem",
+                  textAlign: "center",
+               }}
+            >
+               {erroGlobal}
+            </div>
+         )}
+
          {erro && (
             <div
                className="error-message"
@@ -531,7 +571,21 @@ export default function ProjetosPage() {
          <div className="projects-grid">
             {projetosAtuais.length > 0 &&
                projetosAtuais.map((projeto) => (
-                  <ProjectCard key={projeto.idProjeto} projeto={projeto} />
+                  <ProjectCard
+                     key={projeto.idProjeto}
+                     projeto={projeto}
+                     onDeleteSuccess={() => {
+                        setMsgGlobal("Projeto deletado com sucesso!");
+                        setErroGlobal("");
+                        fetchProjetos(anoBuscaDebounced); // Atualiza a lista sem recarregar a página
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                     }}
+                     onDeleteError={(msg) => {
+                        setErroGlobal(msg);
+                        setMsgGlobal("");
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                     }}
+                  />
                ))}
          </div>
 

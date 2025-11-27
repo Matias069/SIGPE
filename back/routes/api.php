@@ -42,12 +42,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Cadastrar um novo projeto
     Route::post('/projetos', [ProjetoController::class, 'store']);
+    // Atualizar um projeto
+    Route::put('projetos/{id}', [ProjetoController::class, 'update']);
     
     // Retorna alunos disponíveis para o dropdown de cadastro
     Route::get('/alunos/disponiveis', [AlunoController::class, 'searchAvailable']);
 
     // Requer Admin
     Route::middleware('admin')->group(function () {
+        // Deletar um Projeto
+        Route::delete('projetos/{id}', [ProjetoController::class, 'destroy']);
+
         // Rotas de Relatório
         Route::get('/relatorios', [RelatorioController::class, 'index']);
 
