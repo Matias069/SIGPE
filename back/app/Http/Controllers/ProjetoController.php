@@ -15,6 +15,7 @@ use Illuminate\Validation\Rule;
 class ProjetoController extends Controller
 {
     private static $palavras = null;
+    private static $criterios = null;
 
     public function __construct()
     {
@@ -23,6 +24,24 @@ class ProjetoController extends Controller
                 file_get_contents(storage_path('palavras.json')),
                 true
             );
+        }
+
+        if (self::$criterios === null) {
+            $pathCriterios = storage_path('criterios.json');
+            if (file_exists($pathCriterios)) {
+                self::$criterios = json_decode(file_get_contents($pathCriterios), true);
+            } else {
+                // Padrão hardcoded inicial (compatibilidade retroativa)
+                self::$criterios = [
+                   "Qualidade na escrita e organização",
+                   "Desenvolvimento do tema",
+                   "Qualidade da apresentação",
+                   "Domínio do conteúdo",
+                   "Consistência na arguição",
+                ];
+                // Cria o arquivo na primeira execução
+                file_put_contents($pathCriterios, json_encode(self::$criterios, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            }
         }
     }
     
@@ -52,6 +71,25 @@ class ProjetoController extends Controller
             ->lockForUpdate()
             ->get()
             ->count() >= 2;
+    }
+
+    public function getCriterios()
+    {
+        return response()->json(self::$criterios);
+    }
+
+    public function updateCriterios(Request $request)
+    {
+        // Validação do input
+        $validated = $request->validate([
+            'criterios' => 'required|array|min:1',
+            'criterios.*' => 'required|string|max:255'
+        ]);
+
+        self::$criterios = $validated['criterios'];
+        file_put_contents(storage_path('criterios.json'), json_encode(self::$criterios, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+        return response()->json(['message' => 'Critérios atualizados com sucesso', 'criterios' => self::$criterios]);
     }
 
     public function verificarAcesso(Request $request, $id)
@@ -130,9 +168,12 @@ class ProjetoController extends Controller
             return response()->json(['message' => 'Limite de avaliações excedido para este projeto.'], 400);
         }
 
+        // Validação Dinâmica baseada na quantidade atual de critérios
+        $qtdCriterios = count(self::$criterios);
+
         $validated = $request->validate([
             'matriculaSiape' => 'required|string|exists:avaliador,matriculaSiape',
-            'notas' => 'required|array|size:5',
+            'notas' => 'required|array|size:'.$qtdCriterios,
             'notas.*' => 'numeric|min:0|max:10',
             'notasAlunos' => 'nullable|array',
             'notasAlunos.*' => 'numeric|min:0|max:100', // Nota final do aluno (escala 0-100)

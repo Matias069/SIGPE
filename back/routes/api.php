@@ -16,6 +16,8 @@ Route::post('/login', [AuthOrientadorController::class, 'login']);
 Route::get('/avaliadores', [AvaliadorController::class, 'index']);
 // Pesquisar avaliadores
 Route::get('/avaliadores/search', [AvaliadorController::class, 'search']);
+// Buscar critérios (Público para a página de avaliação carregar)
+Route::get('/criterios', [ProjetoController::class, 'getCriterios']);
 
 // Listar todos os projetos
 Route::get('/projetos', [ProjetoController::class, 'index']);
@@ -64,5 +66,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Rota de Avaliador
         Route::post('/avaliadores', [AvaliadorController::class, 'store']);
+
+        // Atualizar critérios
+        Route::post('/criterios', [ProjetoController::class, 'updateCriterios']);
     });
 });

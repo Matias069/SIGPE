@@ -79,7 +79,7 @@ export function ProjectCard({ projeto }: ProjectCardProps) {
                fontSize: "0.9rem",
             }}
          >
-            Nota: {(Number(projeto.nota_final) / 10).toFixed(2)}
+            Nota (máx 1.00): {(Number(projeto.nota_final) / 10).toFixed(2)}
          </div>
       );
    } else if (projeto.status_avaliacao === "em_andamento") {

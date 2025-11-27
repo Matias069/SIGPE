@@ -5,14 +5,6 @@ import { handleApiError } from "../utils/errorHandler";
 // @ts-ignore: Importação de CSS
 import "../styles/Pages.css";
 
-const criteriosFixos = [
-   "Qualidade na escrita e organização",
-   "Desenvolvimento do tema",
-   "Qualidade da apresentação",
-   "Domínio do conteúdo",
-   "Consistência na arguição",
-];
-
 // Tipagem para os dados que virão da API
 type Aluno = {
    matriculaAluno: string;
@@ -43,8 +35,12 @@ export default function EvaluationPage() {
    const [erro, setErro] = useState("");
    const [sucesso, setSucesso] = useState("");
 
-   // Estados do formulário
-   const [notas, setNotas] = useState<number[]>(new Array(5).fill(0));
+   // Estado para critérios dinâmicos
+   const [criterios, setCriterios] = useState<string[]>([]);
+
+   // Estados do formulário (inicializado vazio, preenchido após fetch dos critérios)
+   const [notas, setNotas] = useState<number[]>([]);
+
    const [observacoes, setObservacoes] = useState("");
    const [enviando, setEnviando] = useState(false);
 
@@ -71,13 +67,19 @@ export default function EvaluationPage() {
          try {
             setLoading(true);
 
+            // Carrega critérios primeiro
+            const critResponse = await apiClient.get("/criterios");
+            const criteriosData = critResponse.data;
+            setCriterios(criteriosData);
+            setNotas(new Array(criteriosData.length).fill(0));
+
             // Carrega projeto
             const projResponse = await apiClient.get(`/projetos/${id}`);
             setProjeto(projResponse.data);
          } catch (error) {
-            console.error("Erro ao carregar projeto", error);
+            console.error("Erro ao carregar dados", error);
             setErro(
-               handleApiError(error, "Erro ao carregar dados do projeto.")
+               handleApiError(error, "Erro ao carregar dados da avaliação.")
             );
          } finally {
             setLoading(false);
@@ -217,7 +219,7 @@ export default function EvaluationPage() {
          // Reset
          setSelectedAvaliadorObj(null);
          setAvaliadorSearch("");
-         setNotas(new Array(5).fill(0));
+         setNotas(new Array(criterios.length).fill(0));
          setEditandoNotaAluno({});
          setNotasIndividuais({});
          setObservacoes("");
@@ -402,7 +404,7 @@ export default function EvaluationPage() {
 
                {/* Critérios com Sliders */}
                <div className="criteria-list">
-                  {criteriosFixos.map((criterio, index) => (
+                  {criterios.map((criterio, index) => (
                      <div key={index} className="criteria-item">
                         <div className="criteria-header">
                            <span className="criteria-name">{criterio}</span>
@@ -416,7 +418,7 @@ export default function EvaluationPage() {
                               min="0"
                               max="10"
                               step="1"
-                              value={notas[index]}
+                              value={notas[index] || 0} // Garante 0 se undefined
                               onChange={(e) =>
                                  handleNotaChange(index, e.target.value)
                               }

@@ -2,8 +2,246 @@ import { useEffect, useState } from "react";
 import { ProjectCard } from "../components/ProjectCard";
 import apiClient from "../apiClient";
 import { handleApiError } from "../utils/errorHandler";
+import { useAuth } from "../contexts/auth/useAuth";
 // @ts-ignore: Cannot find module or type declarations for side-effect import of '../styles/Pages.css'.
 import "../styles/Pages.css";
+
+// Componente Interno para o Dropdown de Critérios
+const CriteriaDropdown = () => {
+   const [isOpen, setIsOpen] = useState(false);
+   const [criterios, setCriterios] = useState<string[]>([]);
+   const [loading, setLoading] = useState(false);
+   const [saving, setSaving] = useState(false);
+   const [erroCriterios, setErroCriterios] = useState("");
+   const [msgSucesso, setMsgSucesso] = useState("");
+   const loadCriterios = async () => {
+      try {
+         setLoading(true);
+         const res = await apiClient.get("/criterios");
+         setCriterios(res.data);
+      } catch (e) {
+         console.error(e);
+         setErroCriterios("Erro ao carregar critérios.");
+      } finally {
+         setLoading(false);
+      }
+   };
+
+   // Carrega ao abrir
+   useEffect(() => {
+      if (isOpen) {
+         loadCriterios();
+         setMsgSucesso("");
+         setErroCriterios("");
+      }
+   }, [isOpen]);
+
+   const handleAdd = () => {
+      setCriterios([...criterios, "Novo Critério"]);
+      setErroCriterios("");
+   };
+
+   const handleRemove = (index: number) => {
+      if (criterios.length <= 1) {
+         setErroCriterios("É necessário ter pelo menos um critério.");
+         return;
+      }
+      const novos = [...criterios];
+      novos.splice(index, 1);
+      setCriterios(novos);
+      setErroCriterios("");
+   };
+
+   const handleChange = (index: number, val: string) => {
+      const novos = [...criterios];
+      novos[index] = val;
+      setCriterios(novos);
+      setErroCriterios("");
+   };
+
+   const handleSave = async () => {
+      setErroCriterios("");
+      setMsgSucesso("");
+
+      // Validação de Campos Vazios
+      const temVazio = criterios.some((c) => c.trim() === "");
+      if (temVazio) {
+         setErroCriterios("Os nomes dos critérios não podem estar vazios.");
+         return;
+      }
+
+      // Validação de Unicidade (Case insensitive)
+      const nomesNormalizados = criterios.map((c) => c.trim().toLowerCase());
+      const setUnico = new Set(nomesNormalizados);
+      if (setUnico.size !== nomesNormalizados.length) {
+         setErroCriterios("Os nomes dos critérios devem ser únicos.");
+         return;
+      }
+
+      try {
+         setSaving(true);
+         await apiClient.post("/criterios", { criterios });
+         setIsOpen(false);
+         // Mensagem de sucesso definida para aparecer fora do dropdown
+         setMsgSucesso("Critérios atualizados com sucesso!");
+      } catch (error) {
+         setErroCriterios("Erro ao salvar critérios. Tente novamente.");
+      } finally {
+         setSaving(false);
+      }
+   };
+
+   return (
+      <div
+         style={{
+            position: "relative",
+            display: "inline-block",
+            marginBottom: "20px",
+         }}
+      >
+         <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="btn-submit"
+            style={{
+               backgroundColor: "#2d6a4f",
+               padding: "10px 15px",
+               fontSize: "0.9rem",
+            }}
+         >
+            {isOpen ? "Fechar Edição" : "Gerenciar Critérios de Avaliação"}
+         </button>
+
+         {/* Mensagem de sucesso abaixo do botão de gerenciar */}
+         {msgSucesso && (
+            <div
+               style={{
+                  marginTop: "10px",
+                  color: "#155724",
+                  backgroundColor: "#d4edda",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  fontSize: "0.9rem",
+                  border: "1px solid #c3e6cb",
+               }}
+            >
+               {msgSucesso}
+            </div>
+         )}
+
+         {isOpen && (
+            <div
+               style={{
+                  position: "absolute",
+                  top: "110%",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "350px",
+                  backgroundColor: "white",
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+                  zIndex: 2000,
+                  padding: "15px",
+                  textAlign: "left",
+               }}
+            >
+               <h3
+                  style={{
+                     margin: "0 0 10px 0",
+                     fontSize: "1rem",
+                     color: "#333",
+                  }}
+               >
+                  Editar Critérios
+               </h3>
+               {loading ? (
+                  <p>Carregando...</p>
+               ) : (
+                  <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+                     {criterios.map((crit, idx) => (
+                        <div
+                           key={idx}
+                           style={{
+                              display: "flex",
+                              gap: "5px",
+                              marginBottom: "8px",
+                           }}
+                        >
+                           <input
+                              type="text"
+                              value={crit}
+                              onChange={(e) =>
+                                 handleChange(idx, e.target.value)
+                              }
+                              style={{
+                                 flex: 1,
+                                 padding: "5px",
+                                 borderRadius: "4px",
+                                 border: "1px solid #ccc",
+                              }}
+                           />
+                           <button
+                              onClick={() => handleRemove(idx)}
+                              style={{
+                                 background: "#e74c3c",
+                                 color: "white",
+                                 border: "none",
+                                 borderRadius: "4px",
+                                 cursor: "pointer",
+                                 padding: "0 8px",
+                              }}
+                           >
+                              X
+                           </button>
+                        </div>
+                     ))}
+                     <button
+                        onClick={handleAdd}
+                        style={{
+                           width: "100%",
+                           padding: "8px",
+                           background: "#f0f0f0",
+                           border: "1px dashed #999",
+                           cursor: "pointer",
+                           marginTop: "5px",
+                        }}
+                     >
+                        + Adicionar Critério
+                     </button>
+
+                     <div style={{ marginTop: "15px", textAlign: "right" }}>
+                        {/* Variável erroCriterios em cima do botão salvar alterações */}
+                        {erroCriterios && (
+                           <div
+                              style={{
+                                 color: "#721c24",
+                                 fontSize: "0.85rem",
+                                 marginBottom: "8px",
+                                 textAlign: "center",
+                                 padding: "5px",
+                                 backgroundColor: "#f8d7da",
+                                 borderRadius: "4px",
+                              }}
+                           >
+                              {erroCriterios}
+                           </div>
+                        )}
+                        <button
+                           onClick={handleSave}
+                           disabled={saving}
+                           className="btn-submit"
+                           style={{ width: "100%", padding: "8px" }}
+                        >
+                           {saving ? "Salvando..." : "Salvar Alterações"}
+                        </button>
+                     </div>
+                  </div>
+               )}
+            </div>
+         )}
+      </div>
+   );
+};
 
 type Projeto = {
    idProjeto: number;
@@ -17,6 +255,7 @@ type Projeto = {
 };
 
 export default function ProjetosPage() {
+   const { orientador } = useAuth(); // Pega usuário logado
    const [projetos, setProjetos] = useState<Projeto[]>([]);
    const [loading, setLoading] = useState(true);
    const [erro, setErro] = useState("");
@@ -25,6 +264,10 @@ export default function ProjetosPage() {
    const [busca, setBusca] = useState("");
    const [buscaDebounced, setBuscaDebounced] = useState("");
    const [isSearching, setIsSearching] = useState(false);
+
+   // Estado para paginação
+   const [paginaAtual, setPaginaAtual] = useState(1);
+   const projetosPorPagina = 12;
 
    // Debounce – espera 300ms antes de aplicar o filtro
    useEffect(() => {
@@ -42,10 +285,6 @@ export default function ProjetosPage() {
 
       return () => clearTimeout(timer);
    }, [busca]);
-
-   // Estado para paginação
-   const [paginaAtual, setPaginaAtual] = useState(1);
-   const projetosPorPagina = 12;
 
    // Buscar os dados da API
    useEffect(() => {
@@ -148,6 +387,15 @@ export default function ProjetosPage() {
          <h1 className="block text-3xl font-semibold text-gray-700 mb-2 text-center">
             Projetos
          </h1>
+
+         <br />
+
+         {/* Botão de Admin para gerenciar critérios */}
+         {orientador?.isAdmin && (
+            <div style={{ marginBottom: "10px" }}>
+               <CriteriaDropdown />
+            </div>
+         )}
 
          {erro && (
             <div
