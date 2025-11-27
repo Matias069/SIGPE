@@ -386,6 +386,13 @@ class ProjetoController extends Controller
             return response()->json(['message' => 'Projeto não encontrado'], 404);
         }
 
+        // Verifica permissão (Orientador dono ou Admin) - Middleware já garante Admin ou Auth, 
+        // mas idealmente aqui verificamos se o orientador é o dono se não for admin.
+        $user = $request->user();
+        if (!$user->isAdmin && $user->idOrientador !== $projeto->idOrientador) {
+            return response()->json(['message' => 'Não autorizado.'], 403);
+        }
+
         $validatedData = $request->validate([
             'nomeProjeto' => 'required|string|max:100',
             'descricaoProjeto' => [
