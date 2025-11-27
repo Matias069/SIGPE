@@ -119,8 +119,26 @@ class ProjetoController extends Controller
      */
     public function index(Request $request)
     {
-        // Carrega o orientador junto para listagens otimizadas e com avaliações para calcular status
-        $projetos = Projeto::with(['orientador', 'avaliacoes'])->get();
+        // Tenta obter o usuário autenticado (mesmo em rota pública, se o token for enviado)
+        $user = auth('sanctum')->user();
+        
+        // Inicia a query (carrega o orientador junto para listagens otimizadas e com avaliações para calcular status)
+        $query = Projeto::with(['orientador', 'avaliacoes']);
+
+        // Lógica de Filtragem por Ano
+        if ($user && $user->isAdmin) {
+            // Se for Admin, verifica se existe filtro de ano na requisição
+            if ($request->has('ano') && $request->input('ano') !== '') {
+                // Realiza a pesquisa com anos que contenham a query
+                $query->whereRaw('"anoProjeto"::text LIKE ?', ['%'.$request->input('ano').'%']);
+            }
+            // Se não houver filtro 'ano', o Admin vê todos os projetos (histórico completo)
+        } else {
+            // Usuários comuns só veem projetos do ano corrente
+            $query->where('anoProjeto', date('Y'));
+        }
+
+        $projetos = $query->get();
 
         // Processa cada projeto para adicionar campos calculados virtuais
         $projetos->each(function ($projeto) {
@@ -138,11 +156,8 @@ class ProjetoController extends Controller
                 // Calcula média das médias
                 $somaMedias = 0;
                 foreach ($projeto->avaliacoes as $avaliacao) {
-                    // $avaliacao->criteriosDeAvaliacao é um array [n1, n2, n3, n4, n5]
-                    // Se já vier castado pelo Model, é array, se não, json_decode
-                    $notas = is_string($avaliacao->criteriosDeAvaliacao) 
-                        ? json_decode($avaliacao->criteriosDeAvaliacao, true) 
-                        : $avaliacao->criteriosDeAvaliacao;
+                    // $avaliacao->criteriosDeAvaliacao é um array [n1, n2, n3, n4, n5] (vem castado pelo Model como array)
+                    $notas = $avaliacao->criteriosDeAvaliacao;
                     
                     if (is_array($notas) && count($notas) > 0) {
                         $mediaAvaliacao = array_sum($notas) / count($notas);

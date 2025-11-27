@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ProjectCard } from "../components/ProjectCard";
 import apiClient from "../apiClient";
 import { handleApiError } from "../utils/errorHandler";
@@ -249,6 +249,7 @@ type Projeto = {
    descricaoProjeto: string;
    bannerProjeto: string | null;
    senhaAvaliador: string;
+   anoProjeto?: number;
    orientador: {
       nomeOrientador: string;
    };
@@ -257,55 +258,90 @@ type Projeto = {
 export default function ProjetosPage() {
    const { orientador } = useAuth(); // Pega usuário logado
    const [projetos, setProjetos] = useState<Projeto[]>([]);
-   const [loading, setLoading] = useState(true);
    const [erro, setErro] = useState("");
 
    // Estados da busca
    const [busca, setBusca] = useState("");
    const [buscaDebounced, setBuscaDebounced] = useState("");
-   const [isSearching, setIsSearching] = useState(false);
+
+   const [loading, setLoading] = useState(true); // Controla apenas o "Carregando..." inicial da página (tela cheia)
+   const [isSearching, setIsSearching] = useState(false); // Controla o feedback "Buscando..." (inline)
+
+   // Estado para filtro de ano (Apenas Admin)
+   const currentYear = new Date().getFullYear().toString();
+   const [anoBusca, setAnoBusca] = useState(
+      orientador?.isAdmin ? "" : currentYear
+   );
+   const [anoBuscaDebounced, setAnoBuscaDebounced] = useState(
+      orientador?.isAdmin ? "" : currentYear
+   );
 
    // Estado para paginação
    const [paginaAtual, setPaginaAtual] = useState(1);
    const projetosPorPagina = 12;
 
-   // Debounce – espera 300ms antes de aplicar o filtro
+   // Debounce do Nome (Filtro local)
    useEffect(() => {
-      if (busca.trim() !== "") {
-         setIsSearching(true);
-      } else {
-         setIsSearching(false);
-      }
+      if (busca.trim() !== "") setIsSearching(true);
 
       const timer = setTimeout(() => {
          setBuscaDebounced(busca);
-         setPaginaAtual(1); // Volta para página 1 após buscar
+         setPaginaAtual(1);
+         // Só desativa se não estivermos aguardando uma requisição de ano também
          setIsSearching(false);
       }, 300);
 
       return () => clearTimeout(timer);
    }, [busca]);
 
-   // Buscar os dados da API
+   // Debounce do Ano (Filtro server-side)
    useEffect(() => {
-      const fetchProjetos = async () => {
+      // Se o valor mudou, ativa o "Buscando..."
+      if (anoBusca !== anoBuscaDebounced) setIsSearching(true);
+
+      const timer = setTimeout(() => {
+         setAnoBuscaDebounced(anoBusca);
+         setPaginaAtual(1);
+         // Não setamos setIsSearching(false) aqui porque o fetchProjetos vai rodar logo em seguida
+         // e ele gerencia o estado final do isSearching
+      }, 300);
+
+      return () => clearTimeout(timer);
+   }, [anoBusca]);
+
+   // Buscar os dados da API
+   // Função de busca no backend (envolvida em useCallback para usar no useEffect)
+   const fetchProjetos = useCallback(
+      async (ano: string) => {
          try {
             setErro("");
-            setLoading(true);
-            const response = await apiClient.get("/projetos");
+            // Se não for o load inicial (onde loading já é true), ativamos o modo busca
+            setIsSearching(true);
+
+            const params: any = {};
+            if (orientador?.isAdmin && ano !== "") {
+               params.ano = ano;
+            }
+
+            const response = await apiClient.get("/projetos", { params });
             setProjetos(response.data);
          } catch (error) {
-            console.error("Erro ao buscar projetos", error);
+            console.error("Erro", error);
             setErro(handleApiError(error, "Falha ao carregar os projetos."));
          } finally {
-            setLoading(false);
+            setLoading(false); // Remove o load inicial
+            setIsSearching(false); // Remove o texto "Buscando..."
          }
-      };
+      },
+      [orientador]
+   );
 
-      fetchProjetos();
-   }, []);
+   // Effect para carregar projetos quando o Ano Debounced muda
+   useEffect(() => {
+      fetchProjetos(anoBuscaDebounced);
+   }, [anoBuscaDebounced, fetchProjetos]);
 
-   // Filtrar projetos com o valor debounced
+   // Filtros Combinados: Backend já filtrou por ano, agora filtramos por nome no front
    const projetosFiltrados = projetos.filter((p) =>
       p.nomeProjeto?.toLowerCase().includes(buscaDebounced.toLowerCase())
    );
@@ -415,26 +451,52 @@ export default function ProjetosPage() {
             </div>
          )}
 
-         <input
-            type="text"
-            placeholder="Pesquisar projetos..."
-            value={busca}
-            onChange={(e) => {
-               setBusca(e.target.value);
-               setPaginaAtual(1); // Resetar para página 1 ao pesquisar
-            }}
-            className="input"
+         <div
             style={{
-               padding: "10px",
-               width: "60%",
-               maxWidth: "400px",
-               borderRadius: "6px",
-               border: "1px solid #ccc",
+               display: "flex",
+               justifyContent: "center",
+               gap: "10px",
+               marginBottom: "20px",
+               flexWrap: "wrap",
             }}
-         />
+         >
+            {/* Input de Busca de Texto */}
+            <input
+               type="text"
+               placeholder="Pesquisar projetos..."
+               value={busca}
+               onChange={(e) => setBusca(e.target.value)}
+               className="input"
+               style={{
+                  padding: "10px",
+                  width: "100%",
+                  maxWidth: "400px",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc",
+               }}
+            />
 
-         {/* Texto de busca */}
-         {isSearching && busca !== "" && (
+            {/* Input de Ano (Apenas Admin) */}
+            {orientador?.isAdmin && (
+               <input
+                  type="number"
+                  placeholder="Ano"
+                  value={anoBusca}
+                  onChange={(e) => setAnoBusca(e.target.value)}
+                  className="input"
+                  style={{
+                     padding: "10px",
+                     width: "100px",
+                     borderRadius: "6px",
+                     border: "1px solid #ccc",
+                  }}
+                  title="Filtrar por ano (deixe vazio para ver todos)"
+               />
+            )}
+         </div>
+
+         {/* Texto unificado para busca de nome ou ano */}
+         {isSearching && (
             <p style={{ textAlign: "center", marginTop: "10px" }}>
                Buscando...
             </p>
@@ -446,6 +508,23 @@ export default function ProjetosPage() {
                <p style={{ textAlign: "center", marginTop: "20px" }}>
                   Nenhum projeto encontrado para "
                   <strong>{buscaDebounced}</strong>".
+               </p>
+            )}
+
+         {/* Feedback do histórico para Admin */}
+         {orientador?.isAdmin &&
+            anoBuscaDebounced === "" &&
+            !isSearching &&
+            !loading &&
+            projetosFiltrados.length > 0 && (
+               <p
+                  style={{
+                     fontSize: "0.8rem",
+                     color: "#666",
+                     marginBottom: "10px",
+                  }}
+               >
+                  Exibindo histórico completo de projetos.
                </p>
             )}
 

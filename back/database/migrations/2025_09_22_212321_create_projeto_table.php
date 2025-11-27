@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('descricaoProjeto', 5000);
             $table->string('bannerProjeto')->nullable();
             $table->string('senhaAvaliador');
+            $table->integer('anoProjeto')->default(DB::raw('EXTRACT(YEAR FROM CURRENT_DATE)'));
 
             $table->foreign('idOrientador')->references('idOrientador')->on('orientador');
         });

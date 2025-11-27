@@ -13,6 +13,7 @@ interface Projeto {
    descricaoProjeto: string;
    bannerProjeto: string | null;
    senhaAvaliador: string;
+   anoProjeto?: number;
    orientador: {
       nomeOrientador: string;
    };
@@ -137,11 +138,29 @@ export function ProjectCard({ projeto }: ProjectCardProps) {
             {/* Exibe o status ou nota */}
             {statusBadge}
 
-            {isAdmin && projeto.senhaAvaliador && (
-               <p className="card-senha">
-                  <strong>Senha do Projeto:</strong>{" "}
-                  <i>"{projeto.senhaAvaliador}"</i>
-               </p>
+            {isAdmin && (
+               <div
+                  className="card-admin-text"
+                  style={{
+                     marginTop: "10px",
+                     fontSize: "0.85rem",
+                     color: "#555",
+                     borderTop: "1px solid #eee",
+                     paddingTop: "5px",
+                  }}
+               >
+                  {projeto.senhaAvaliador && (
+                     <p style={{ marginBottom: "2px" }}>
+                        <strong>Senha:</strong>{" "}
+                        <i>"{projeto.senhaAvaliador}"</i>
+                     </p>
+                  )}
+                  {projeto.anoProjeto && (
+                     <p style={{ margin: 0 }}>
+                        <strong>Ano do Projeto:</strong> {projeto.anoProjeto}
+                     </p>
+                  )}
+               </div>
             )}
 
             {/* Link para a página de acesso do avaliador específica deste projeto */}
